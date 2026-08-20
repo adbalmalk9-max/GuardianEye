@@ -10,41 +10,38 @@ import os
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
 
-# ==========================
+# ====================
 # لمسات تصميمية للواجهة
-# ==========================
-st.markdown(
-    """
-    <style>
-    /* تغيير الخلفية والنصوص */
-    body {
-        background-color: #0f172a;
-        color: #f8fafc;
-    }
+# ====================
+st.markdown("""
+<style>
+body {
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #f8fafc;
+}
 
-    /* تغيير العناوين */
-    h1, h2, h3 {
-        color: #38bdf8 !important;
-        font-family: 'Cairo', sans-serif;
-    }
+/* تغيير العناوين */
+h1, h2, h3 {
+    color: #38bdf8 !important;
+    font-family: 'Cairo', sans-serif;
+}
 
-    /* الأزرار */
-    .stButton>button {
-        background-color: #1e293b;
-        color: #f8fafc;
-        border-radius: 8px;
-        padding: 10px 20px;
-        font-weight: bold;
-        transition: 0.3s;
-    }
-    .stButton>button:hover {
-        background-color: #38bdf8;
-        color: #0f172a;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+/* الأزرار */
+.stButton>button {
+    background-color: #1e293b;
+    color: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: bold;
+    transition: 0.3s;
+    box-shadow: 0 0 15px #00c8ff;
+}
+.stButton>button:hover {
+    background-color: #38bdf8;
+    color: #0f172a;
+}
+</style>
+""", unsafe_allow_html=True)
 from streamlit_autorefresh import st_autorefresh
 # يحدث الصفحة كل ثانية (1000 ملي ثانية)
 st_autorefresh(interval=1000, limit=None, key="refresh")
