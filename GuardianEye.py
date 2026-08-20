@@ -9,6 +9,42 @@ import os
 # إعداد الصفحة
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
+
+# ==========================
+# لمسات تصميمية للواجهة
+# ==========================
+st.markdown(
+    """
+    <style>
+    /* تغيير الخلفية والنصوص */
+    body {
+        background-color: #0f172a;
+        color: #f8fafc;
+    }
+
+    /* تغيير العناوين */
+    h1, h2, h3 {
+        color: #38bdf8 !important;
+        font-family: 'Cairo', sans-serif;
+    }
+
+    /* الأزرار */
+    .stButton>button {
+        background-color: #1e293b;
+        color: #f8fafc;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-weight: bold;
+        transition: 0.3s;
+    }
+    .stButton>button:hover {
+        background-color: #38bdf8;
+        color: #0f172a;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 from streamlit_autorefresh import st_autorefresh
 # يحدث الصفحة كل ثانية (1000 ملي ثانية)
 st_autorefresh(interval=1000, limit=None, key="refresh")
@@ -61,6 +97,37 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.role = None
     st.sidebar.success("تم تسجيل الخروج ✅")
+if st.session_state.get("logged_in", False):
+    st.title("👁️ GuardianEye Dashboard")
+    st.success("مرحباً بك يا مدير النظام ✅")
+
+    # قسم المنظومات
+    st.header("🏢 المنظومات")
+    if st.session_state.systems:
+        st.table(st.session_state.systems)
+    else:
+        st.info("لا توجد منظومات مسجلة حالياً")
+
+    # قسم الإحصائيات
+    st.header("📊 الإحصائيات")
+    st.metric("عدد المنظومات", len(st.session_state.systems))
+    st.line_chart([1, 3, 2, 4])
+
+    # قسم سجل الأحداث
+    st.header("📜 سجل الأحداث")
+    if st.session_state.logs:
+        for log in st.session_state.logs:
+            st.write(log)
+    else:
+        st.info("لا توجد أحداث مسجلة")
+
+    # قسم الإعدادات
+    st.header("⚙️ الإعدادات")
+    st.write("إعدادات النظام ستظهر هنا")
+
+    # زر إضافة منظومة جديدة
+    if st.button("➕ إضافة منظومة جديدة"):
+        st.write("هنا تقدر تضيف منظومة جديدة")
 
 # =========================
 # دوال كشف الهجمات
@@ -206,15 +273,6 @@ else:
         </audio>
         """, unsafe_allow_html=True)
 
-# =========================
-# تذييل
-# =========================
-st.markdown("""
-<hr>
-<p style='text-align:center; color:gray;'>
-Made with ❤️ by GuardianEye Team
-</p>
-""", unsafe_allow_html=True)
 # =========================
 # ميزات الأمان المتقدمة
 # =========================
