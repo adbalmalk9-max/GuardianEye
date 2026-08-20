@@ -15,15 +15,30 @@ st.set_page_config(page_title="GuardianEye", layout="wide")
 # ====================
 st.markdown("""
 <style>
+/* خلفية متدرجة متحركة */
+@keyframes gradientMove {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
+}
 body {
     background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    background-size: 200% 200%;
+    animation: gradientMove 15s ease infinite;
     color: #f8fafc;
 }
 
-/* تغيير العناوين */
-h1, h2, h3 {
+/* تأثير نيون على النص */
+h1 {
     color: #38bdf8 !important;
+    text-shadow: 0 0 10px #00c8ff, 0 0 20px #00c8ff, 0 0 30px #00c8ff;
     font-family: 'Cairo', sans-serif;
+    font-weight: bold;
+    animation: glow 2s ease-in-out infinite alternate;
+}
+@keyframes glow {
+    from { text-shadow: 0 0 10px #00c8ff; }
+    to { text-shadow: 0 0 30px #00c8ff, 0 0 60px #00c8ff; }
 }
 
 /* الأزرار */
@@ -158,6 +173,48 @@ else:
 
     # Tabs رئيسية
     tab1, tab2, tab3, tab4 = st.tabs(["🏢 المنظومات", "📊 الإحصائيات", "📜 سجل الأحداث", "⚙️ الإعدادات"])
+# ====================
+# ساعة رقمية متوهجة
+# ====================
+now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
+
+# ====================
+# دوائر مضيئة للحالة
+# ====================
+status_colors = {
+    "آمان": "#22c55e",   # أخضر
+    "انتباه": "#facc15", # أصفر
+    "هجوم": "#ef4444"    # أحمر
+}
+
+systems = [
+    {"name": "مؤسسة تعليمية صبراته", "status": "آمان"},
+    {"name": "شركة تقنية ليبيا", "status": "انتباه"},
+    {"name": "منظومة مالية طرابلس", "status": "هجوم"}
+]
+
+for sys in systems:
+    color = status_colors[sys["status"]]
+    st.markdown(
+        f"<div style='background:{color}; padding:15px; border-radius:50%; width:120px; height:120px; "
+        f"display:flex; align-items:center; justify-content:center; margin:10px auto; "
+        f"box-shadow:0 0 25px {color}; color:black; font-weight:bold;'>"
+        f"{sys['status']}</div><p style='text-align:center; color:#38bdf8;'>{sys['name']}</p>",
+        unsafe_allow_html=True
+    )
+
+# ====================
+# صوت إنذار عند الهجوم
+# ====================
+alert = any(sys["status"] == "هجوم" for sys in systems)
+if alert:
+    st.markdown("""
+        <audio autoplay>
+            <source src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" type="audio/mpeg">
+        </audio>
+    """, unsafe_allow_html=True)
+    st.error("🚨 إنذار: تم رصد هجوم على إحدى المنظومات!")
 
     # =========================
     # Tab 1: المنظومات
