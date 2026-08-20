@@ -162,7 +162,6 @@ st.markdown("""
 <h1 style='text-align:center; color:#00BFFF;'>👁️ GuardianEye</h1>
 <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
 """, unsafe_allow_html=True)
-
 # =========================
 # تحقق من تسجيل الدخول
 # =========================
@@ -171,50 +170,16 @@ if not st.session_state.logged_in:
 else:
     st.sidebar.button("🚪 تسجيل الخروج", on_click=logout)
 
+    # ====================
+    # ساعة رقمية متوهجة
+    # ====================
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
+
+    # ====================
     # Tabs رئيسية
+    # ====================
     tab1, tab2, tab3, tab4 = st.tabs(["🏢 المنظومات", "📊 الإحصائيات", "📜 سجل الأحداث", "⚙️ الإعدادات"])
-# ====================
-# ساعة رقمية متوهجة
-# ====================
-now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
-
-# ====================
-# دوائر مضيئة للحالة
-# ====================
-status_colors = {
-    "آمان": "#22c55e",   # أخضر
-    "انتباه": "#facc15", # أصفر
-    "هجوم": "#ef4444"    # أحمر
-}
-
-systems = [
-    {"name": "مؤسسة تعليمية صبراته", "status": "آمان"},
-    {"name": "شركة تقنية ليبيا", "status": "انتباه"},
-    {"name": "منظومة مالية طرابلس", "status": "هجوم"}
-]
-
-for sys in systems:
-    color = status_colors[sys["status"]]
-    st.markdown(
-        f"<div style='background:{color}; padding:15px; border-radius:50%; width:120px; height:120px; "
-        f"display:flex; align-items:center; justify-content:center; margin:10px auto; "
-        f"box-shadow:0 0 25px {color}; color:black; font-weight:bold;'>"
-        f"{sys['status']}</div><p style='text-align:center; color:#38bdf8;'>{sys['name']}</p>",
-        unsafe_allow_html=True
-    )
-
-# ====================
-# صوت إنذار عند الهجوم
-# ====================
-alert = any(sys["status"] == "هجوم" for sys in systems)
-if alert:
-    st.markdown("""
-        <audio autoplay>
-            <source src="https://www.soundjay.com/buttons/sounds/beep-07.mp3" type="audio/mpeg">
-        </audio>
-    """, unsafe_allow_html=True)
-    st.error("🚨 إنذار: تم رصد هجوم على إحدى المنظومات!")
 
     # =========================
     # Tab 1: المنظومات
@@ -280,8 +245,7 @@ if alert:
 
     # =========================
     # Tab 2: الإحصائيات
-    # =========================
-    with tab2:
+    # =========================      with tab2:
         st.subheader("📊 إحصائيات المنظومات")
         if st.session_state.systems:
             df = pd.DataFrame(st.session_state.systems)
