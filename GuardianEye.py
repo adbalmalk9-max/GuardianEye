@@ -142,7 +142,8 @@ if st.session_state.get("logged_in", False):
         st.write("هنا تقدر تضيف منظومة جديدة")
 
 # =========================
-# دوال كشف الهجمات
+# دوال كشف ا
+    لهجمات
 # =========================
 def detect_attack(url):
     attacks = {
@@ -182,28 +183,33 @@ else:
     tab1, tab2, tab3, tab4 = st.tabs(["🏢 المنظومات", "📊 الإحصائيات", "📜 سجل الأحداث", "⚙️ الإعدادات"])
 
     # =========================
-    # Tab 1: المنظومات
-    # =========================
-    with tab1:
-        st.subheader("➕ إضافة منظومة جديدة")
-        company = st.text_input("اسم الشركة/المؤسسة:")
-        url = st.text_input("رابط المنظومة:")
-        if st.button("إضافة"):
-            if company and url:
-                attack = detect_attack(url)
-                status = "🚨 تحت هجوم" if attack else "✅ سليم"
-                entry = {
-                    "company": company,
-                    "url": url,
-                    "status": status,
-                    "attack": attack if attack else "لا يوجد",
-                    "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-                st.session_state.systems.append(entry)
-                save_data(st.session_state.systems)
-                if attack:
-                    st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
-                st.success(f"تمت إضافة {company} بنجاح ✅")
+# Tab 1: المنظومات
+# =========================
+with tab1:
+    st.subheader("➕ إضافة منظومة جديدة")
+    company = st.text_input("اسم الشركة/المؤسسة:")
+    url = st.text_input("رابط المنظومة:")
+    api_url = st.text_input("رابط الـ API (اختياري):")
+    api_key = st.text_input("مفتاح الـ API (اختياري):", type="password")
+
+    if st.button("إضافة"):
+        if company and url:
+            attack = detect_attack(url)
+            status = "🚨 تحت هجوم" if attack else "✅ سليم"
+            entry = {
+                "company": company,
+                "url": url,
+                "api_url": api_url,
+                "api_key": api_key if api_key else "لا يوجد",
+                "status": status,
+                "attack": attack if attack else "لا يوجد",
+                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            st.session_state.systems.append(entry)
+            save_data(st.session_state.systems)
+            if attack:
+                st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
+            st.success(f"تمت إضافة {company} بنجاح ✅")
 
         # عدادات
         col1, col2, col3 = st.columns(3)
