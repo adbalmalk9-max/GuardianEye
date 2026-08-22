@@ -22,23 +22,10 @@ st.markdown("""
     100% {background-position: 0% 50%;}
 }
 body {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    background-size: 200% 200%;
+    background: linear-gradient(270deg, #0f2027, #203a43, #2c5364);
+    background-size: 400% 400%;
     animation: gradientMove 15s ease infinite;
     color: #f8fafc;
-}
-
-/* تأثير نيون على النص */
-h1 {
-    color: #38bdf8 !important;
-    text-shadow: 0 0 10px #00c8ff, 0 0 20px #00c8ff, 0 0 30px #00c8ff;
-    font-family: 'Cairo', sans-serif;
-    font-weight: bold;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-@keyframes glow {
-    from { text-shadow: 0 0 10px #00c8ff; }
-    to { text-shadow: 0 0 30px #00c8ff, 0 0 60px #00c8ff; }
 }
 
 /* الأزرار */
@@ -57,9 +44,13 @@ h1 {
 }
 </style>
 """, unsafe_allow_html=True)
+
 from streamlit_autorefresh import st_autorefresh
 # يحدث الصفحة كل ثانية (1000 ملي ثانية)
 st_autorefresh(interval=1000, limit=None, key="refresh")
+
+# رسالة تأكيد التحديث
+st.write("✅ النسخة الأخيرة من GuardianEye محدثة")
 
 # =========================
 # ملف تخزين البيانات
