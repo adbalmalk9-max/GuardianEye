@@ -336,7 +336,6 @@ def two_factor_auth():
                 st.session_state["twofa_code"] = None
             else:
                 st.error("❌ رمز غير صحيح")
-
 # =========================
 # API للتكامل الخارجي
 # =========================
@@ -409,3 +408,5 @@ def show_dashboard():
 if st.session_state.logged_in:
     show_dashboard()
     two_factor_auth()
+# توقيع باسم صاحب المشروع
+st.markdown("<div style='text-align:left; color:white;'>Abdalmalk Kareem</div>", unsafe_allow_html=True)
