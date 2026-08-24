@@ -229,19 +229,19 @@ else:
                     st.write(f"📌 الحالة: {s['status']}")
                     st.write(f"⚠️ نوع الهجوم: {s['attack']}")
                     st.write(f"⏰ آخر فحص: {s['time']}")
+new_name = st.text_input(f"تعديل اسم المؤسسة {i}", s["company"])
+new_url = st.text_input(f"تعديل الرابط {i}", s["url"])
 
-                    new_name = st.text_input(f"تعديل اسم المؤسسة {i}", s["company"])
-                    new_url = st.text_input(f"تعديل الرابط {i}", s["url"])
-                    if st.button(f"تعديل {i}"):
-                        st.session_state.systems[i]["company"] = new_name
-                        st.session_state.systems[i]["url"] = new_url
-                        save_data(st.session_state.systems)
-                        st.success("تم تعديل البيانات ✅")
+if st.button(f"تعديل {i}"):
+    st.session_state.systems[i]["company"] = new_name
+    st.session_state.systems[i]["url"] = new_url
+    save_data(st.session_state.systems)   # يحفظ التعديلات نهائيًا
+    st.success("تم تعديل البيانات ✅")
 
-                    if st.button(f"حذف {i}"):
-                        st.session_state.systems.pop(i)
-                        save_data(st.session_state.systems)
-                        st.warning("تم حذف المؤسسة ❌")
+if st.button(f"حذف {i}"):
+    st.session_state.systems.pop(i)
+    save_data(st.session_state.systems)   # يحذف نهائيًا من الملف
+    st.warning("تم حذف المؤسسة ❌")
 
     # =========================
     # قسم الإحصائيات
