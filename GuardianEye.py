@@ -176,72 +176,73 @@ else:
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
 
-    # ====================
-    # قسم المنظومات
-    # ====================
-    st.header("🏢 المنظومات")
-    st.subheader("➕ إضافة منظومة جديدة")
-    company = st.text_input("اسم الشركة/المؤسسة:")
-    url = st.text_input("رابط المنظومة:")
-    api_url = st.text_input("رابط الـ API (اختياري):")
-    api_key = st.text_input("مفتاح الـ API (اختياري):", type="password")
+   # ====================
+# قسم المنظومات
+# ====================
+st.header("🏢 المنظومات")
+st.subheader("➕ إضافة منظومة جديدة")
+company = st.text_input("اسم الشركة/المؤسسة:")
+url = st.text_input("رابط المنظومة:")
+api_url = st.text_input("رابط الـ API (اختياري):")
+api_key = st.text_input("مفتاح الـ API (اختياري):", type="password")
 
-    if st.button("إضافة"):
-        if company and url:
-            attack = detect_attack(url)
-            status = "🚨 تحت هجوم" if attack else "✅ سليم"
-            entry = {
-                "company": company,
-                "url": url,
-                "api_url": api_url,
-                "api_key": api_key if api_key else "لا يوجد",
-                "status": status,
-                "attack": attack if attack else "لا يوجد",
-                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            st.session_state.systems.append(entry)
-            save_data(st.session_state.systems)
-            if attack:
-                st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
-            st.success(f"تمت إضافة {company} بنجاح ✅")
+if st.button("إضافة"):
+    if company and url:
+        attack = detect_attack(url)
+        status = "🚨 تحت هجوم" if attack else "✅ سليم"
+        entry = {
+            "company": company,
+            "url": url,
+            "api_url": api_url,
+            "api_key": api_key if api_key else "لا يوجد",
+            "status": status,
+            "attack": attack if attack else "لا يوجد",
+            "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        st.session_state.systems.append(entry)
+        save_data(st.session_state.systems)
+        if attack:
+            st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
+        st.success(f"تمت إضافة {company} بنجاح ✅")
 
-        # عدادات
-        col1, col2, col3 = st.columns(3)
-        col1.metric("عدد المنظومات", len(st.session_state.systems))
-        col2.metric("عدد الهجمات المكتشفة", sum(1 for s in st.session_state.systems if s["status"] == "🚨 تحت هجوم"))
-        col3.metric("عدد المنظومات السليمة", sum(1 for s in st.session_state.systems if s["status"] == "✅ سليم"))
+# عدادات
+col1, col2, col3 = st.columns(3)
+col1.metric("عدد المنظومات", len(st.session_state.systems))
+col2.metric("عدد الهجمات المكتشفة", sum(1 for s in st.session_state.systems if s["status"] == "🚨 تحت هجوم"))
+col3.metric("عدد المنظومات السليمة", sum(1 for s in st.session_state.systems if s["status"] == "✅ سليم"))
 
-        # جدول المنظومات
-        if st.session_state.systems:
-            df = pd.DataFrame(st.session_state.systems)
-            search = st.text_input("🔍 بحث عن منظومة")
-            if search:
-                df = df[df["company"].str.contains(search)]
-            st.dataframe(df, width="stretch")
+# جدول المنظومات
+if st.session_state.systems:
+    df = pd.DataFrame(st.session_state.systems)
+    search = st.text_input("🔍 بحث عن منظومة")
+    if search:
+        df = df[df["company"].str.contains(search)]
+    st.dataframe(df, width="stretch")
 
-            # زر تصدير
-            st.download_button("⬇️ تحميل CSV", df.to_csv(index=False).encode("utf-8"), "systems.csv", "text/csv")
+    # زر تصدير
+    st.download_button("⬇️ تحميل CSV", df.to_csv(index=False).encode("utf-8"), "systems.csv", "text/csv")
 
-            # تفاصيل + تعديل + حذف
-            for i, s in enumerate(st.session_state.systems):
-                with st.expander(f"تفاصيل {s['company']}"):
-                    st.write(f"🔗 الرابط: {s['url']}")
-                    st.write(f"📌 الحالة: {s['status']}")
-                    st.write(f"⚠️ نوع الهجوم: {s['attack']}")
-                    st.write(f"⏰ آخر فحص: {s['time']}")
-new_name = st.text_input(f"تعديل اسم المؤسسة {i}", s["company"])
-new_url = st.text_input(f"تعديل الرابط {i}", s["url"])
+    # تفاصيل + تعديل + حذف
+    for i, s in enumerate(st.session_state.systems):
+        with st.expander(f"تفاصيل {s['company']}"):
+            st.write(f"🔗 الرابط: {s['url']}")
+            st.write(f"📌 الحالة: {s['status']}")
+            st.write(f"⚠️ نوع الهجوم: {s['attack']}")
+            st.write(f"⏰ آخر فحص: {s['time']}")
 
-if st.button(f"تعديل {i}"):
-    st.session_state.systems[i]["company"] = new_name
-    st.session_state.systems[i]["url"] = new_url
-    save_data(st.session_state.systems)   # يحفظ التعديلات نهائيًا
-    st.success("تم تعديل البيانات ✅")
+            new_name = st.text_input(f"تعديل اسم المؤسسة {i}", s["company"])
+            new_url = st.text_input(f"تعديل الرابط {i}", s["url"])
 
-if st.button(f"حذف {i}"):
-    st.session_state.systems.pop(i)
-    save_data(st.session_state.systems)   # يحذف نهائيًا من الملف
-    st.warning("تم حذف المؤسسة ❌")
+            if st.button(f"تعديل {i}"):
+                st.session_state.systems[i]["company"] = new_name
+                st.session_state.systems[i]["url"] = new_url
+                save_data(st.session_state.systems)   # يحفظ التعديلات نهائيًا
+                st.success("تم تعديل البيانات ✅")
+
+            if st.button(f"حذف {i}"):
+                st.session_state.systems.pop(i)
+                save_data(st.session_state.systems)   # يحذف نهائيًا من الملف
+                st.warning("تم حذف المؤسسة ❌")
 
     # =========================
     # قسم الإحصائيات
