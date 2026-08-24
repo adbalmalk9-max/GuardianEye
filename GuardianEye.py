@@ -84,7 +84,7 @@ if "systems" not in st.session_state:
 if "logs" not in st.session_state:
     st.session_state.logs = []
 if "users" not in st.session_state:
-    st.session_state.users = {"MalkX07":"abdalmalk107"}  # مستخدم افتراضي
+    st.session_state.users = {"MalkX03": "Abdalmalk10722"}  # مدير النظام
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "role" not in st.session_state:
@@ -100,7 +100,7 @@ def login():
     if st.sidebar.button("دخول"):
         if username in st.session_state.users and st.session_state.users[username] == password:
             st.session_state.logged_in = True
-            st.session_state.role = "admin" if username == "MalkX07" else "user"
+            st.session_state.role = "admin" if username == "MalkX03" else "user"
             st.success("تم تسجيل الدخول بنجاح ✅")
         else:
             st.error("بيانات الدخول غير صحيحة ❌")
@@ -109,7 +109,13 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.role = None
     st.sidebar.success("تم تسجيل الخروج ✅")
-if st.session_state.get("logged_in", False):
+
+# =========================
+# الاستدعاء
+# =========================
+if not st.session_state.logged_in:
+    login()
+else:
     st.title("👁️ GuardianEye Dashboard")
     st.success("مرحباً بك يا مدير النظام ✅")
 
