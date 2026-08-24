@@ -408,5 +408,10 @@ def show_dashboard():
 if st.session_state.logged_in:
     show_dashboard()
     two_factor_auth()
-# توقيع باسم صاحب المشروع
-st.markdown("<div style='text-align:left; color:white;'>Abdalmalk Kareem</div>", unsafe_allow_html=True)
+
+
+  # توقيع باسم صاحب المشروع
+st.markdown(
+    "<div style='text-align:left; color:white; text-shadow: 0 0 5px #00f, 0 0 10px #00f;'>Abdalmalk Kareem</div>",
+    unsafe_allow_html=True
+)
