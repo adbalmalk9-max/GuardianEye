@@ -95,9 +95,9 @@ if "role" not in st.session_state:
 # =========================
 def login():
     st.sidebar.subheader("🔑 تسجيل الدخول")
-    username = st.sidebar.text_input("اسم المستخدم")
-    password = st.sidebar.text_input("كلمة المرور", type="password")
-    if st.sidebar.button("دخول"):
+    username = st.sidebar.text_input("اسم المستخدم", key="login_username")
+    password = st.sidebar.text_input("كلمة المرور", type="password", key="login_password")
+    if st.sidebar.button("دخول", key="login_button"):
         if username in st.session_state.users and st.session_state.users[username] == password:
             st.session_state.logged_in = True
             st.session_state.role = "admin" if username == "MalkX03" else "user"
