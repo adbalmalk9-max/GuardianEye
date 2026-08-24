@@ -1,7 +1,7 @@
 import streamlit as st
-import datetime
 import pandas as pd
-from streamlit_autorefresh import st_autorefresh  
+import datetime
+import plotly.express as px
 import json
 import os
 
@@ -9,54 +9,6 @@ import os
 # إعداد الصفحة
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
-
-# ====================
-# لمسات تصميمية للواجهة
-# ====================
-st.markdown("""
-<style>
-/* خلفية متدرجة متحركة */
-@keyframes gradientMove {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-}
-body {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    background-size: 200% 200%;
-    animation: gradientMove 15s ease infinite;
-    color: #f8fafc;
-}
-
-/* تأثير نيون على النص */
-h1 {
-    color: #38bdf8 !important;
-    text-shadow: 0 0 10px #00c8ff, 0 0 20px #00c8ff, 0 0 30px #00c8ff;
-    font-family: 'Cairo', sans-serif;
-    font-weight: bold;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-@keyframes glow {
-    from { text-shadow: 0 0 10px #00c8ff; }
-    to { text-shadow: 0 0 30px #00c8ff, 0 0 60px #00c8ff; }
-}
-
-/* الأزرار */
-.stButton>button {
-    background-color: #1e293b;
-    color: #f8fafc;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: bold;
-    transition: 0.3s;
-    box-shadow: 0 0 15px #00c8ff;
-}
-.stButton>button:hover {
-    background-color: #38bdf8;
-    color: #0f172a;
-}
-</style>
-""", unsafe_allow_html=True)
 from streamlit_autorefresh import st_autorefresh
 # يحدث الصفحة كل ثانية (1000 ملي ثانية)
 st_autorefresh(interval=1000, limit=None, key="refresh")
@@ -109,37 +61,6 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.role = None
     st.sidebar.success("تم تسجيل الخروج ✅")
-if st.session_state.get("logged_in", False):
-    st.title("👁️ GuardianEye Dashboard")
-    st.success("مرحباً بك يا مدير النظام ✅")
-
-    # قسم المنظومات
-    st.header("🏢 المنظومات")
-    if st.session_state.systems:
-        st.table(st.session_state.systems)
-    else:
-        st.info("لا توجد منظومات مسجلة حالياً")
-
-    # قسم الإحصائيات
-    st.header("📊 الإحصائيات")
-    st.metric("عدد المنظومات", len(st.session_state.systems))
-    st.line_chart([1, 3, 2, 4])
-
-    # قسم سجل الأحداث
-    st.header("📜 سجل الأحداث")
-    if st.session_state.logs:
-        for log in st.session_state.logs:
-            st.write(log)
-    else:
-        st.info("لا توجد أحداث مسجلة")
-
-    # قسم الإعدادات
-    st.header("⚙️ الإعدادات")
-    st.write("إعدادات النظام ستظهر هنا")
-
-    # زر إضافة منظومة جديدة
-    if st.button("➕ إضافة منظومة جديدة"):
-        st.write("هنا تقدر تضيف منظومة جديدة")
 
 # =========================
 # دوال كشف الهجمات
@@ -162,6 +83,7 @@ st.markdown("""
 <h1 style='text-align:center; color:#00BFFF;'>👁️ GuardianEye</h1>
 <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
 """, unsafe_allow_html=True)
+
 # =========================
 # تحقق من تسجيل الدخول
 # =========================
@@ -170,45 +92,32 @@ if not st.session_state.logged_in:
 else:
     st.sidebar.button("🚪 تسجيل الخروج", on_click=logout)
 
-    # ====================
-    # ساعة رقمية متوهجة
-    # ====================
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
-
-    # ====================
     # Tabs رئيسية
-    # ====================
     tab1, tab2, tab3, tab4 = st.tabs(["🏢 المنظومات", "📊 الإحصائيات", "📜 سجل الأحداث", "⚙️ الإعدادات"])
 
-# =========================
-# Tab 1: المنظومات
-# =========================
-with tab1:
-    st.subheader("➕ إضافة منظومة جديدة")
-    company = st.text_input("اسم الشركة/المؤسسة:")
-    url = st.text_input("رابط المنظومة:")
-    api_url = st.text_input("رابط الـ API (اختياري):")
-    api_key = st.text_input("مفتاح الـ API (اختياري):", type="password")
-
-    if st.button("إضافة"):
-        if company and url:
-            attack = detect_attack(url)
-            status = "🚨 تحت هجوم" if attack else "✅ سليم"
-            entry = {
-                "company": company,
-                "url": url,
-                "api_url": api_url,
-                "api_key": api_key if api_key else "لا يوجد",
-                "status": status,
-                "attack": attack if attack else "لا يوجد",
-                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            st.session_state.systems.append(entry)
-            save_data(st.session_state.systems)
-            if attack:
-                st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
-            st.success(f"تمت إضافة {company} بنجاح ✅")
+    # =========================
+    # Tab 1: المنظومات
+    # =========================
+    with tab1:
+        st.subheader("➕ إضافة منظومة جديدة")
+        company = st.text_input("اسم الشركة/المؤسسة:")
+        url = st.text_input("رابط المنظومة:")
+        if st.button("إضافة"):
+            if company and url:
+                attack = detect_attack(url)
+                status = "🚨 تحت هجوم" if attack else "✅ سليم"
+                entry = {
+                    "company": company,
+                    "url": url,
+                    "status": status,
+                    "attack": attack if attack else "لا يوجد",
+                    "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                }
+                st.session_state.systems.append(entry)
+                save_data(st.session_state.systems)
+                if attack:
+                    st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
+                st.success(f"تمت إضافة {company} بنجاح ✅")
 
         # عدادات
         col1, col2, col3 = st.columns(3)
@@ -250,7 +159,8 @@ with tab1:
 
     # =========================
     # Tab 2: الإحصائيات
-    # =========================      with tab2:
+    # =========================
+    with tab2:
         st.subheader("📊 إحصائيات المنظومات")
         if st.session_state.systems:
             df = pd.DataFrame(st.session_state.systems)
@@ -296,6 +206,15 @@ with tab1:
         </audio>
         """, unsafe_allow_html=True)
 
+# =========================
+# تذييل
+# =========================
+st.markdown("""
+<hr>
+<p style='text-align:center; color:gray;'>
+Made with ❤️ by GuardianEye Team
+</p>
+""", unsafe_allow_html=True)
 # =========================
 # ميزات الأمان المتقدمة
 # =========================
