@@ -9,7 +9,7 @@ import plotly.express as px
 # إعداد الصفحة
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
-
+ 
 # ====================
 # لمسات تصميمية للواجهة
 # ====================
@@ -94,7 +94,7 @@ if "role" not in st.session_state:
 # نظام تسجيل الدخول
 # =========================
 def login():
-    st.sidebar.subheader("🔑 تسجيل الدخول")
+    st.sidebar.subheader(" تسجيل الدخول")
     username = st.sidebar.text_input("اسم المستخدم", key="username_field")
     password = st.sidebar.text_input("كلمة المرور", type="password", key="password_field")
     if st.sidebar.button("دخول", key="login_submit"):
@@ -115,20 +115,20 @@ def logout():
 if not st.session_state.logged_in:
     login()
 else:
-    st.title("👁️ GuardianEye Dashboard")
+    st.title(" GuardianEye Dashboard")
     st.success("مرحباً بك يا مدير النظام ✅")
-    st.sidebar.button("🚪 تسجيل الخروج", on_click=logout, key="logout_button")
+    st.sidebar.button(" تسجيل الخروج", on_click=logout, key="logout_button")
 
     # ====================
     # ساعة رقمية متوهجة
     # ====================
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'> {now}</h3>", unsafe_allow_html=True)
 
     # ====================
     # قسم المنظومات
     # ====================
-    st.header("🏢 المنظومات")
+    st.header(" المنظومات")
     st.subheader("➕ إضافة منظومة جديدة")
     company = st.text_input("اسم الشركة/المؤسسة:")
     url = st.text_input("رابط المنظومة:")
