@@ -91,27 +91,13 @@ if "role" not in st.session_state:
     st.session_state.role = None
 
 # =========================
-# Session State
-# =========================
-if "systems" not in st.session_state:
-    st.session_state.systems = load_data()
-if "logs" not in st.session_state:
-    st.session_state.logs = []
-if "users" not in st.session_state:
-    st.session_state.users = {"MalkX03": "Abdalmalk10722"}  # مدير النظام
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "role" not in st.session_state:
-    st.session_state.role = None
-
-# =========================
 # نظام تسجيل الدخول
 # =========================
 def login():
     st.sidebar.subheader("🔑 تسجيل الدخول")
-    username = st.sidebar.text_input("اسم المستخدم", key="login_username_input")
-    password = st.sidebar.text_input("كلمة المرور", type="password", key="login_password_input")
-    if st.sidebar.button("دخول", key="login_button_click"):
+    username = st.sidebar.text_input("اسم المستخدم", key="username_field")
+    password = st.sidebar.text_input("كلمة المرور", type="password", key="password_field")
+    if st.sidebar.button("دخول", key="login_submit"):
         if username in st.session_state.users and st.session_state.users[username] == password:
             st.session_state.logged_in = True
             st.session_state.role = "admin" if username == "MalkX03" else "user"
@@ -125,13 +111,20 @@ def logout():
     st.sidebar.success("تم تسجيل الخروج ✅")
 
 # =========================
-# الاستدعاء
+# تحقق من تسجيل الدخول
 # =========================
 if not st.session_state.logged_in:
     login()
 else:
     st.title("👁️ GuardianEye Dashboard")
     st.success("مرحباً بك يا مدير النظام ✅")
+    st.sidebar.button("🚪 تسجيل الخروج", on_click=logout, key="logout_button")
+
+    # ====================
+    # ساعة رقمية متوهجة
+    # ====================
+    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
 
     # قسم المنظومات
     st.header("🏢 المنظومات")
@@ -181,22 +174,9 @@ def detect_attack(url):
 st.markdown("""
 <h1 style='text-align:center; color:#00BFFF;'>👁️ GuardianEye</h1>
 <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
-""", unsafe_allow_html=True)
-# =========================
-# تحقق من تسجيل الدخول
-# =========================
-if not st.session_state.logged_in:
-    login()
-else:
-    st.sidebar.button("🚪 تسجيل الخروج", on_click=logout)
+""", unsafe_allow_html=True) 
 
-    # ====================
-    # ساعة رقمية متوهجة
-    # ====================
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
-
-   # ====================
+# ====================
 # قسم المنظومات
 # ====================
 st.header("🏢 المنظومات")
