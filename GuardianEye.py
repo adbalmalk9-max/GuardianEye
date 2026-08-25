@@ -91,6 +91,20 @@ if "role" not in st.session_state:
     st.session_state.role = None
 
 # =========================
+# Session State
+# =========================
+if "systems" not in st.session_state:
+    st.session_state.systems = load_data()
+if "logs" not in st.session_state:
+    st.session_state.logs = []
+if "users" not in st.session_state:
+    st.session_state.users = {"MalkX03": "Abdalmalk10722"}  # مدير النظام
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+if "role" not in st.session_state:
+    st.session_state.role = None
+
+# =========================
 # نظام تسجيل الدخول
 # =========================
 def login():
