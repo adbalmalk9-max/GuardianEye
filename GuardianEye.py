@@ -331,9 +331,9 @@ if st.session_state.logged_in:
     show_dashboard()
     two_factor_auth()
 
+    # توقيع باسم صاحب المشروع (يظهر فقط بعد تسجيل الدخول)
+    st.markdown(
+        "<div style='text-align:left; color:white; font-size:22px; font-weight:bold; text-shadow: 0 0 8px #00f, 0 0 15px #00f;'>Abdalmalk Kareem</div>",
+        unsafe_allow_html=True
+    )
 
-    # توقيع باسم صاحب المشروع
-st.markdown(
-    "<div style='text-align:left; color:white; font-size:22px; font-weight:bold; text-shadow: 0 0 8px #00f, 0 0 15px #00f;'>Abdalmalk Kareem</div>",
-    unsafe_allow_html=True
-)
