@@ -7,14 +7,6 @@ import os
 import plotly.express as px
 
 # =========================
-# واجهة البداية (تظهر للجميع)
-# =========================
-st.markdown("""
-<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
-<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
-""", unsafe_allow_html=True)
-
-# =========================
 # إعداد الصفحة
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
@@ -123,22 +115,23 @@ def logout():
 # تحقق من تسجيل الدخول
 # =========================
 if not st.session_state.logged_in:
+    # واجهة البداية تظهر فقط قبل الدخول
+    st.markdown("""
+    <h1 style='text-align:center; color:#00BFFF;'>👁️ GuardianEye</h1>
+    <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
+    """, unsafe_allow_html=True)
     login()
 else:
-    st.title(" GuardianEye Dashboard")
+    st.title("👁️ GuardianEye Dashboard")
     st.success("مرحباً بك يا مدير النظام ✅")
-    st.sidebar.button(" تسجيل الخروج", on_click=logout, key="logout_button")
+    st.sidebar.button("🚪 تسجيل الخروج", on_click=logout, key="logout_button")
 
-    # ====================
     # ساعة رقمية متوهجة
-    # ====================
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'> {now}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
 
-    # ====================
     # قسم المنظومات
-    # ====================
-    st.header(" المنظومات")
+    st.header("🏢 المنظومات")
     st.subheader("➕ إضافة منظومة جديدة")
     company = st.text_input("اسم الشركة/المؤسسة:")
     url = st.text_input("رابط المنظومة:")
@@ -159,26 +152,15 @@ else:
                 "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
             st.session_state.systems.append(entry)
-            save_data(st.session_state.systems)
+            save_data(st.session_state.systems)  # يحفظ مباشرة في قاعدة البيانات
             if attack:
                 st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
             st.success(f"تمت إضافة {company} بنجاح ✅")
 
-    # عدادات
-    col1, col2, col3 = st.columns(3)
-    col1.metric("عدد المنظومات", len(st.session_state.systems))
-    col2.metric("عدد الهجمات المكتشفة", sum(1 for s in st.session_state.systems if s["status"] == "🚨 تحت هجوم"))
-    col3.metric("عدد المنظومات السليمة", sum(1 for s in st.session_state.systems if s["status"] == "✅ سليم"))
-
     # جدول المنظومات + تعديل + حذف + تصدير
     if st.session_state.systems:
         df = pd.DataFrame(st.session_state.systems)
-        search = st.text_input("🔍 بحث عن منظومة")
-        if search:
-            df = df[df["company"].str.contains(search)]
         st.dataframe(df, width="stretch")
-
-        st.download_button("⬇️ تحميل CSV", df.to_csv(index=False).encode("utf-8"), "systems.csv", "text/csv")
 
         for i, s in enumerate(st.session_state.systems):
             with st.expander(f"تفاصيل {s['company']}"):
@@ -187,18 +169,9 @@ else:
                 st.write(f"⚠️ نوع الهجوم: {s['attack']}")
                 st.write(f"⏰ آخر فحص: {s['time']}")
 
-                new_name = st.text_input(f"تعديل اسم المؤسسة {i}", s["company"])
-                new_url = st.text_input(f"تعديل الرابط {i}", s["url"])
-
-                if st.button(f"تعديل {i}"):
-                    st.session_state.systems[i]["company"] = new_name
-                    st.session_state.systems[i]["url"] = new_url
-                    save_data(st.session_state.systems)
-                    st.success("✅ تم تعديل البيانات وحفظها نهائيًا")
-
                 if st.button(f"حذف {i}"):
                     st.session_state.systems.pop(i)
-                    save_data(st.session_state.systems)
+                    save_data(st.session_state.systems)  # تحديث الملف مباشرة
                     st.success("✅ تم الحذف نهائيًا من النظام والملف")
 
     # =========================
