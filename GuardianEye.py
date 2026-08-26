@@ -117,22 +117,22 @@ def logout():
 if not st.session_state.logged_in:
     # واجهة البداية تظهر فقط قبل الدخول
     st.markdown("""
-    <h1 style='text-align:center; color:#00BFFF;'>👁️ GuardianEye</h1>
+    <h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
     <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
     """, unsafe_allow_html=True)
     login()
 else:
-    st.title("👁️ GuardianEye Dashboard")
-    st.success("مرحباً بك يا مدير النظام ✅")
-    st.sidebar.button("🚪 تسجيل الخروج", on_click=logout, key="logout_button")
+    st.title(" GuardianEye Dashboard")
+    st.success("مرحباً بك يا مدير النظام ")
+    st.sidebar.button(" تسجيل الخروج", on_click=logout, key="logout_button")
 
     # ساعة رقمية متوهجة
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'>🕒 {now}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'> {now}</h3>", unsafe_allow_html=True)
 
     # قسم المنظومات
-    st.header("🏢 المنظومات")
-    st.subheader("➕ إضافة منظومة جديدة")
+    st.header(" المنظومات")
+    st.subheader("+ إضافة منظومة جديدة")
     company = st.text_input("اسم الشركة/المؤسسة:")
     url = st.text_input("رابط المنظومة:")
     api_url = st.text_input("رابط الـ API (اختياري):")
@@ -195,7 +195,7 @@ else:
     # =========================
     # قسم سجل الأحداث
     # =========================
-    st.header("📜 سجل الأحداث")
+    st.header(" سجل الأحداث")
     if st.session_state.logs:
         for log in st.session_state.logs:
             st.warning(log)
@@ -262,10 +262,10 @@ def two_factor_auth():
         code = st.text_input("أدخل رمز 2FA:")
         if st.button("تحقق"):
             if code == st.session_state["twofa_code"]:
-                st.success("✅ تم التحقق بنجاح")
+                st.success(" تم التحقق بنجاح")
                 st.session_state["twofa_code"] = None
             else:
-                st.error("❌ رمز غير صحيح")
+                st.error(" رمز غير صحيح")
 # =========================
 # API للتكامل الخارجي
 # =========================
