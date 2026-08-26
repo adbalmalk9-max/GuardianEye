@@ -77,6 +77,14 @@ def save_data(data):
         json.dump(data, f, ensure_ascii=False, indent=4)
 
 # =========================
+# واجهة البداية (تظهر للجميع)
+# =========================
+st.markdown("""
+<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
+<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
+""", unsafe_allow_html=True)
+
+# =========================
 # Session State
 # =========================
 if "systems" not in st.session_state:
@@ -89,14 +97,6 @@ if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "role" not in st.session_state:
     st.session_state.role = None
-
-# =========================
-# واجهة البداية (تظهر للجميع)
-# =========================
-st.markdown("""
-<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
-<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
-""", unsafe_allow_html=True)
 
 # =========================
 # نظام تسجيل الدخول
