@@ -109,6 +109,15 @@ def logout():
     st.session_state.logged_in = False
     st.session_state.role = None
     st.sidebar.success("تم تسجيل الخروج ✅")
+
+# =========================
+# واجهة البداية (تظهر للجميع)
+# =========================
+st.markdown("""
+<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
+<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
+""", unsafe_allow_html=True)
+
 # =========================
 # تحقق من تسجيل الدخول
 # =========================
