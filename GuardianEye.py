@@ -7,17 +7,17 @@ import os
 import plotly.express as px
 
 # =========================
-# إعداد الصفحة
-# =========================
-st.set_page_config(page_title="GuardianEye", layout="wide")
-
- # =========================
 # واجهة البداية (تظهر للجميع)
 # =========================
 st.markdown("""
 <h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
 <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
 """, unsafe_allow_html=True)
+
+# =========================
+# إعداد الصفحة
+# =========================
+st.set_page_config(page_title="GuardianEye", layout="wide")
 
 # ====================
 # لمسات تصميمية للواجهة
