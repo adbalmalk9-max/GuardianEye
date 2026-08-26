@@ -5,11 +5,20 @@ from streamlit_autorefresh import st_autorefresh
 import json
 import os
 import plotly.express as px
+
 # =========================
 # إعداد الصفحة
 # =========================
 st.set_page_config(page_title="GuardianEye", layout="wide")
- 
+
+ # =========================
+# واجهة البداية (تظهر للجميع)
+# =========================
+st.markdown("""
+<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
+<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
+""", unsafe_allow_html=True)
+
 # ====================
 # لمسات تصميمية للواجهة
 # ====================
@@ -75,14 +84,6 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
-
-# =========================
-# واجهة البداية (تظهر للجميع)
-# =========================
-st.markdown("""
-<h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
-<h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
-""", unsafe_allow_html=True)
 
 # =========================
 # Session State
