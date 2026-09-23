@@ -135,8 +135,8 @@ def login():
         st.info("اضبط GUARDIAN_ADMIN_USER و GUARDIAN_ADMIN_PASSWORD قبل تشغيل النسخة.")
         return
 
-    username = st.sidebar.text_input("اسم المستخدم", key="username_field")
-    password = st.sidebar.text_input("كلمة المرور", type="password", key="password_field")
+    username = st.sidebar.text_input("MalkX03", key="username_field")
+    password = st.sidebar.text_input("Abdalmalk10722", type="password", key="password_field")
 
     if st.sidebar.button("دخول", use_container_width=True):
         if username == ADMIN_USER and password == ADMIN_PASSWORD:
