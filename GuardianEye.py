@@ -1,339 +1,416 @@
-import streamlit as st
-import datetime
-import pandas as pd
-from streamlit_autorefresh import st_autorefresh  
+import datetime as dt
 import json
 import os
+import time
+import uuid
+from pathlib import Path
+
+import pandas as pd
 import plotly.express as px
-
-# =========================
-# إعداد الصفحة
-# =========================
-st.set_page_config(page_title="GuardianEye", layout="wide")
-
-# ====================
-# لمسات تصميمية للواجهة
-# ====================
-st.markdown("""
-<style>
-/* خلفية متدرجة متحركة */
-@keyframes gradientMove {
-    0% {background-position: 0% 50%;}
-    50% {background-position: 100% 50%;}
-    100% {background-position: 0% 50%;}
-}
-body {
-    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-    background-size: 200% 200%;
-    animation: gradientMove 15s ease infinite;
-    color: #f8fafc;
-}
-
-/* تأثير نيون على النص */
-h1 {
-    color: #38bdf8 !important;
-    text-shadow: 0 0 10px #00c8ff, 0 0 20px #00c8ff, 0 0 30px #00c8ff;
-    font-family: 'Cairo', sans-serif;
-    font-weight: bold;
-    animation: glow 2s ease-in-out infinite alternate;
-}
-@keyframes glow {
-    from { text-shadow: 0 0 10px #00c8ff; }
-    to { text-shadow: 0 0 30px #00c8ff, 0 0 60px #00c8ff; }
-}
-
-/* الأزرار */
-.stButton>button {
-    background-color: #1e293b;
-    color: #f8fafc;
-    border-radius: 8px;
-    padding: 10px 20px;
-    font-weight: bold;
-    transition: 0.3s;
-    box-shadow: 0 0 15px #00c8ff;
-}
-.stButton>button:hover {
-    background-color: #38bdf8;
-    color: #0f172a;
-}
-</style>
-""", unsafe_allow_html=True)
+import requests
+import streamlit as st
 from streamlit_autorefresh import st_autorefresh
-# يحدث الصفحة كل ثانية (1000 ملي ثانية)
-st_autorefresh(interval=1000, limit=None, key="refresh")
 
 # =========================
-# ملف تخزين البيانات
+# App configuration
 # =========================
-DATA_FILE = "systems.json"
+st.set_page_config(page_title="GuardianEye", page_icon="🛡️", layout="wide")
 
-def load_data():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
+DATA_FILE = Path("systems.json")
+LOG_FILE = Path("events.json")
+CHECK_INTERVAL_SECONDS = 15
+REQUEST_TIMEOUT_SECONDS = 8
+
+STATUS_LABELS = {
+    "HEALTHY": "✅ سليم",
+    "DEGRADED": "⚠️ بطيء",
+    "DOWN": "🔴 متوقف",
+    "AUTH_ERROR": "🔐 فشل المصادقة",
+    "ERROR": "❌ خطأ",
+    "UNKNOWN": "❔ غير مفحوص",
+}
+
+# =========================
+# Minimal UI styling
+# =========================
+st.markdown(
+    """
+    <style>
+    .guardian-card {
+        border: 1px solid rgba(148, 163, 184, .20);
+        border-radius: 14px;
+        padding: 16px;
+        background: rgba(15, 23, 42, .55);
+        margin-bottom: 12px;
+    }
+    .muted { color: #94a3b8; font-size: 0.9rem; }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+# =========================
+# Persistence helpers
+# =========================
+def load_json(path: Path, default):
+    if not path.exists():
+        return default
+    try:
+        with path.open("r", encoding="utf-8") as f:
             return json.load(f)
-    return []
+    except (json.JSONDecodeError, OSError):
+        return default
 
-def save_data(data):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=4)
+
+def save_json(path: Path, data):
+    temp_path = path.with_suffix(path.suffix + ".tmp")
+    with temp_path.open("w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    temp_path.replace(path)
+
+
+def load_systems():
+    raw = load_json(DATA_FILE, [])
+    systems = []
+    for item in raw:
+        system = dict(item)
+        # Never persist API secrets in systems.json.
+        system.pop("api_key", None)
+        system.setdefault("id", str(uuid.uuid4()))
+        system.setdefault("status_code", None)
+        system.setdefault("response_ms", None)
+        system.setdefault("last_error", None)
+        system.setdefault("last_check", None)
+        system.setdefault("check_count", 0)
+        system.setdefault("last_state", "UNKNOWN")
+        systems.append(system)
+    return systems
+
+
+def save_systems(systems):
+    safe_systems = []
+    for system in systems:
+        safe = dict(system)
+        # Defensive: remove secrets even if an old object contains one.
+        safe.pop("api_key", None)
+        safe_systems.append(safe)
+    save_json(DATA_FILE, safe_systems)
+
+
+def append_event(system_name, state, message):
+    events = load_json(LOG_FILE, [])
+    events.append(
+        {
+            "time": dt.datetime.now().isoformat(timespec="seconds"),
+            "system": system_name,
+            "state": state,
+            "message": message,
+        }
+    )
+    save_json(LOG_FILE, events[-500:])
+
 
 # =========================
-# Session State
+# Runtime state
 # =========================
 if "systems" not in st.session_state:
-    st.session_state.systems = load_data()
-if "logs" not in st.session_state:
-    st.session_state.logs = []
-if "users" not in st.session_state:
-    st.session_state.users = {"MalkX03": "Abdalmalk10722"}  # مدير النظام
+    st.session_state.systems = load_systems()
+if "api_keys" not in st.session_state:
+    st.session_state.api_keys = {}
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
-if "role" not in st.session_state:
-    st.session_state.role = None
 
 # =========================
-# نظام تسجيل الدخول
+# Authentication
 # =========================
+ADMIN_USER = os.getenv("GUARDIAN_ADMIN_USER", "")
+ADMIN_PASSWORD = os.getenv("GUARDIAN_ADMIN_PASSWORD", "")
+
+
 def login():
-    st.sidebar.subheader(" تسجيل الدخول")
+    st.sidebar.subheader("تسجيل الدخول")
+
+    if not ADMIN_USER or not ADMIN_PASSWORD:
+        st.sidebar.error("لم يتم ضبط بيانات المدير في متغيرات البيئة.")
+        st.info("اضبط GUARDIAN_ADMIN_USER و GUARDIAN_ADMIN_PASSWORD قبل تشغيل النسخة.")
+        return
+
     username = st.sidebar.text_input("اسم المستخدم", key="username_field")
     password = st.sidebar.text_input("كلمة المرور", type="password", key="password_field")
-    if st.sidebar.button("دخول", key="login_submit"):
-        if username in st.session_state.users and st.session_state.users[username] == password:
-            st.session_state.logged_in = True
-            st.session_state.role = "admin" if username == "MalkX03" else "user"
-            st.success("تم تسجيل الدخول بنجاح ✅")
-        else:
-            st.error("بيانات الدخول غير صحيحة ❌")
 
+    if st.sidebar.button("دخول", use_container_width=True):
+        if username == ADMIN_USER and password == ADMIN_PASSWORD:
+            st.session_state.logged_in = True
+            st.rerun()
+        else:
+            st.sidebar.error("بيانات الدخول غير صحيحة")
+
+
+if not st.session_state.logged_in:
+    st.title("🛡️ GuardianEye")
+    st.caption("مركز مراقبة للمنظومات المصرح لك بإدارتها ومراقبتها")
+    login()
+    st.stop()
+
+# =========================
+# Session controls
+# =========================
 def logout():
     st.session_state.logged_in = False
-    st.session_state.role = None
-    st.sidebar.success("تم تسجيل الخروج ✅")
+    st.session_state.api_keys = {}
+    st.rerun()
+
+
+st.sidebar.button("تسجيل الخروج", on_click=logout, use_container_width=True)
+
+# Refresh the UI, but do not hammer targets every second.
+st_autorefresh(interval=1000, limit=None, key="guardian_refresh")
 
 # =========================
-# تحقق من تسجيل الدخول
+# Monitoring engine
 # =========================
-if not st.session_state.logged_in:
-    # واجهة البداية تظهر فقط قبل الدخول
-    st.markdown("""
-    <h1 style='text-align:center; color:#00BFFF;'> GuardianEye</h1>
-    <h3 style='text-align:center; color:#FFD700;'>🛡️ مركز مراقبة الشركات والمنظومات</h3>
-    """, unsafe_allow_html=True)
-    login()
-else:
-    st.title(" GuardianEye Dashboard")
-    st.success("مرحباً بك يا مدير النظام ")
-    st.sidebar.button(" تسجيل الخروج", on_click=logout, key="logout_button")
+def classify_state(status_code, response_ms, error=None):
+    if error == "AUTH_ERROR":
+        return "AUTH_ERROR"
+    if error:
+        return "ERROR"
+    if status_code is None:
+        return "UNKNOWN"
+    if 200 <= status_code < 400:
+        return "HEALTHY" if response_ms is not None and response_ms < 1000 else "DEGRADED"
+    if status_code in (401, 403):
+        return "AUTH_ERROR"
+    if 400 <= status_code < 600:
+        return "DOWN"
+    return "ERROR"
 
-    # ساعة رقمية متوهجة
-    now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.markdown(f"<h3 style='text-align:center; color:#38bdf8;'> {now}</h3>", unsafe_allow_html=True)
 
-    # قسم المنظومات
-    st.header(" المنظومات")
-    st.subheader("+ إضافة منظومة جديدة")
-    company = st.text_input("اسم الشركة/المؤسسة:")
-    url = st.text_input("رابط المنظومة:")
-    api_url = st.text_input("رابط الـ API (اختياري):")
-    api_key = st.text_input("مفتاح الـ API (اختياري):", type="password")
+def check_system(system):
+    url = (system.get("api_url") or system.get("url") or "").strip()
+    if not url:
+        return None
 
-    if st.button("إضافة"):
-        if company and url:
-            attack = detect_attack(url)
-            status = "🚨 تحت هجوم" if attack else "✅ سليم"
-            entry = {
-                "company": company,
-                "url": url,
-                "api_url": api_url,
-                "api_key": api_key if api_key else "لا يوجد",
-                "status": status,
-                "attack": attack if attack else "لا يوجد",
-                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    headers = {"User-Agent": "GuardianEye-Monitor/1.0"}
+    api_key = st.session_state.api_keys.get(system["id"], "")
+    if api_key:
+        headers["Authorization"] = f"Bearer {api_key}"
+
+    started = time.perf_counter()
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=REQUEST_TIMEOUT_SECONDS,
+            allow_redirects=True,
+        )
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+        error = "AUTH_ERROR" if response.status_code in (401, 403) else None
+        return {
+            "state": classify_state(response.status_code, elapsed_ms, error),
+            "status_code": response.status_code,
+            "response_ms": elapsed_ms,
+            "error": error,
+        }
+    except requests.RequestException as exc:
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+        return {
+            "state": "DOWN",
+            "status_code": None,
+            "response_ms": elapsed_ms,
+            "error": str(exc),
+        }
+
+
+def perform_due_checks():
+    now = dt.datetime.now()
+    changed = False
+
+    for system in st.session_state.systems:
+        last_check = system.get("last_check")
+        due = True
+        if last_check:
+            try:
+                previous = dt.datetime.fromisoformat(last_check)
+                due = (now - previous).total_seconds() >= CHECK_INTERVAL_SECONDS
+            except ValueError:
+                due = True
+
+        if not due:
+            continue
+
+        result = check_system(system)
+        if result is None:
+            continue
+
+        old_state = system.get("last_state", "UNKNOWN")
+        new_state = result["state"]
+        system["last_state"] = new_state
+        system["status"] = STATUS_LABELS[new_state]
+        system["status_code"] = result["status_code"]
+        system["response_ms"] = result["response_ms"]
+        system["last_error"] = result["error"]
+        system["last_check"] = now.isoformat(timespec="seconds")
+        system["check_count"] = int(system.get("check_count", 0)) + 1
+        changed = True
+
+        if old_state != "UNKNOWN" and old_state != new_state:
+            append_event(
+                system.get("company", system.get("name", "Unknown")),
+                new_state,
+                f"تغيرت الحالة من {STATUS_LABELS.get(old_state, old_state)} إلى {STATUS_LABELS[new_state]}",
+            )
+
+    if changed:
+        save_systems(st.session_state.systems)
+
+
+perform_due_checks()
+
+# =========================
+# Header
+# =========================
+st.title("GuardianEye Dashboard")
+st.caption("مراقبة دورية للحالة، زمن الاستجابة، وأحداث المنظومات")
+
+# =========================
+# Add system
+# =========================
+st.subheader("إضافة منظومة")
+with st.form("add_system_form", clear_on_submit=True):
+    company = st.text_input("اسم الشركة / المؤسسة")
+    url = st.text_input("رابط المنظومة")
+    api_url = st.text_input("رابط Health/API للفحص", placeholder="https://example.com/health")
+    api_key = st.text_input("API Key", type="password", help="لا يتم حفظ المفتاح داخل systems.json")
+    submitted = st.form_submit_button("إضافة المنظومة", use_container_width=True)
+
+    if submitted:
+        if not company.strip() or not url.strip():
+            st.error("اسم الشركة والرابط مطلوبان.")
+        else:
+            system_id = str(uuid.uuid4())
+            system = {
+                "id": system_id,
+                "company": company.strip(),
+                "url": url.strip(),
+                "api_url": api_url.strip() or url.strip(),
+                "status": STATUS_LABELS["UNKNOWN"],
+                "last_state": "UNKNOWN",
+                "status_code": None,
+                "response_ms": None,
+                "last_error": None,
+                "last_check": None,
+                "check_count": 0,
             }
-            st.session_state.systems.append(entry)
-            save_data(st.session_state.systems)  # يحفظ مباشرة في قاعدة البيانات
-            if attack:
-                st.session_state.logs.append(f"{company} تعرض لهجوم {attack} في {entry['time']}")
-            st.success(f"تمت إضافة {company} بنجاح ✅")
-
-    # جدول المنظومات + تعديل + حذف + تصدير
-    if st.session_state.systems:
-        df = pd.DataFrame(st.session_state.systems)
-        st.dataframe(df, width="stretch")
-
-        for i, s in enumerate(st.session_state.systems):
-            with st.expander(f"تفاصيل {s['company']}"):
-                st.write(f"🔗 الرابط: {s['url']}")
-                st.write(f"📌 الحالة: {s['status']}")
-                st.write(f"⚠️ نوع الهجوم: {s['attack']}")
-                st.write(f"⏰ آخر فحص: {s['time']}")
-
-                if st.button(f"حذف {i}"):
-                    st.session_state.systems.pop(i)
-                    save_data(st.session_state.systems)  # تحديث الملف مباشرة
-                    st.success("✅ تم الحذف نهائيًا من النظام والملف")
-
-    # =========================
-    # قسم الإحصائيات
-    # =========================
-    st.header("📊 إحصائيات المنظومات")
-    if st.session_state.systems:
-        df = pd.DataFrame(st.session_state.systems)
-        fig1 = px.pie(df, names="status", title="نسبة الحالات")
-        st.plotly_chart(fig1, use_container_width=True)
-
-        fig2 = px.bar(df, x="company", y="status", color="status", title="حالة كل منظومة")
-        st.plotly_chart(fig2, use_container_width=True)
-
-        attacks = df["attack"].value_counts()
-        fig3 = px.bar(attacks, x=attacks.index, y=attacks.values, title="أكثر أنواع الهجمات شيوعًا")
-        st.plotly_chart(fig3, use_container_width=True)
-    else:
-        st.info("لا توجد بيانات بعد.")
-
-    # =========================
-    # قسم سجل الأحداث
-    # =========================
-    st.header(" سجل الأحداث")
-    if st.session_state.logs:
-        for log in st.session_state.logs:
-            st.warning(log)
-    else:
-        st.info("لا توجد أحداث بعد.")
-
-    # =========================
-    # إنذار صوتي عند الهجوم
-    # =========================
-    if any(s["status"] == "🚨 تحت هجوم" for s in st.session_state.systems):
-        st.markdown("""
-        <audio autoplay>
-        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
-        </audio>
-        """, unsafe_allow_html=True)
+            st.session_state.systems.append(system)
+            if api_key:
+                st.session_state.api_keys[system_id] = api_key
+            save_systems(st.session_state.systems)
+            st.success(f"تمت إضافة {company.strip()} ✅")
+            st.rerun()
 
 # =========================
-# ميزات الأمان المتقدمة
+# Overview metrics
 # =========================
-import smtplib
-from email.mime.text import MIMEText
+all_states = [s.get("last_state", "UNKNOWN") for s in st.session_state.systems]
+healthy_count = sum(state == "HEALTHY" for state in all_states)
+down_count = sum(state == "DOWN" for state in all_states)
+auth_count = sum(state == "AUTH_ERROR" for state in all_states)
 
-def send_email_alert(company, attack):
-    sender = "guardianeye.alerts@example.com"
-    receiver = "admin@example.com"
-    msg = MIMEText(f"🚨 الشركة {company} تعرضت لهجوم {attack}")
-    msg["Subject"] = "GuardianEye Alert"
-    msg["From"] = sender
-    msg["To"] = receiver
-
-    try:
-        with smtplib.SMTP("smtp.example.com", 587) as server:
-            server.starttls()
-            server.login(sender, "password")
-            server.sendmail(sender, receiver, msg.as_string())
-        st.success("📧 تم إرسال تنبيه بالبريد الإلكتروني")
-    except Exception as e:
-        st.error(f"فشل إرسال البريد: {e}")
+m1, m2, m3, m4 = st.columns(4)
+m1.metric("المنظومات", len(st.session_state.systems))
+m2.metric("سليمة", healthy_count)
+m3.metric("متوقفة", down_count)
+m4.metric("مصادقة", auth_count)
 
 # =========================
-# مصادقة ثنائية (2FA)
+# Systems table
 # =========================
-import random
-
-def generate_2fa_code():
-    return str(random.randint(100000, 999999))
-
-if "twofa_code" not in st.session_state:
-    st.session_state["twofa_code"] = None
-
-def two_factor_auth():
-    if st.session_state.role == "admin":
-        if st.session_state["twofa_code"] is None:
-         st.session_state["twofa_code"] = generate_2fa_code()
-        st.info(f"رمز المصادقة الثنائية: {st.session_state['twofa_code']}")
-        code = st.text_input("أدخل رمز 2FA:")
-        if st.button("تحقق"):
-            if code == st.session_state["twofa_code"]:
-                st.success(" تم التحقق بنجاح")
-                st.session_state["twofa_code"] = None
-            else:
-                st.error(" رمز غير صحيح")
-# =========================
-# API للتكامل الخارجي
-# =========================
-import flask
-from flask import Flask, jsonify
-
-app = Flask(__name__)
-
-@app.route("/api/systems", methods=["GET"])
-def get_systems():
-    return jsonify(st.session_state.systems)
-
-@app.route("/api/logs", methods=["GET"])
-def get_logs():
-    return jsonify(st.session_state.logs)
-
-# =========================
-# Webhook للتنبيهات
-# =========================
-import requests
-
-def send_webhook(company, attack):
-    url = "https://hooks.slack.com/services/XXXX/XXXX/XXXX"
-    payload = {"text": f"🚨 الشركة {company} تعرضت لهجوم {attack}"}
-    try:
-        requests.post(url, json=payload)
-        st.success("📡 تم إرسال تنبيه عبر Webhook")
-    except Exception as e:
-        st.error(f"فشل إرسال Webhook: {e}")
-
-# =========================
-# دعم لغتين كامل
-# =========================
-translations = {
-    "ar": {
-        "add_system": "➕ إضافة منظومة جديدة",
-        "stats": "📊 إحصائيات المنظومات",
-        "logs": "📜 سجل الأحداث",
-        "settings": "⚙️ إعدادات الموقع"
-    },
-    "en": {
-        "add_system": "➕ Add New System",
-        "stats": "📊 Systems Statistics",
-        "logs": "📜 Event Logs",
-        "settings": "⚙️ Site Settings"
-    }
-}
-
-def t(key):
-    lang = "ar" if "lang" not in st.session_state else st.session_state.lang
-    return translations[lang][key]
-
-# =========================
-# تحسينات إضافية في الواجهة
-# =========================
-def show_dashboard():
-    st.markdown("<h2 style='color:#32CD32;'>📊 Dashboard حيّ</h2>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
-    col1.metric("عدد المؤسسات", len(st.session_state.systems))
-    col2.metric("عدد الهجمات", sum(1 for s in st.session_state.systems if s["status"] == "🚨 تحت هجوم"))
-    col3.metric("عدد السليمة", sum(1 for s in st.session_state.systems if s["status"] == "✅ سليم"))
-
-    if st.session_state.systems:
-        latest = st.session_state.systems[-1]
-        st.info(f"آخر مؤسسة تمت إضافتها: {latest['company']} ({latest['status']})")
-
-# =========================
-# استدعاء الميزات
-# =========================
-if st.session_state.logged_in:
-    show_dashboard()
-    two_factor_auth()
-
-    # توقيع باسم صاحب المشروع (يظهر فقط بعد تسجيل الدخول)
-    st.markdown(
-        "<div style='text-align:left; color:white; font-size:22px; font-weight:bold; text-shadow: 0 0 8px #00f, 0 0 15px #00f;'>Abdalmalk Kareem</div>",
-        unsafe_allow_html=True
+st.subheader("المنظومات")
+if not st.session_state.systems:
+    st.info("لا توجد منظومات مضافة بعد.")
+else:
+    table = pd.DataFrame(
+        [
+            {
+                "المؤسسة": s.get("company", ""),
+                "الحالة": s.get("status", STATUS_LABELS["UNKNOWN"]),
+                "HTTP": s.get("status_code"),
+                "الاستجابة (ms)": s.get("response_ms"),
+                "آخر فحص": s.get("last_check", "—"),
+                "عدد الفحوص": s.get("check_count", 0),
+            }
+            for s in st.session_state.systems
+        ]
     )
+    st.dataframe(table, use_container_width=True, hide_index=True)
+
+    for index, system in enumerate(st.session_state.systems):
+        name = system.get("company", f"System {index + 1}")
+        with st.expander(name):
+            st.write(f"**الرابط:** {system.get('url', '—')}")
+            st.write(f"**Endpoint:** {system.get('api_url', '—')}")
+            st.write(f"**الحالة:** {system.get('status', STATUS_LABELS['UNKNOWN'])}")
+            st.write(f"**HTTP:** {system.get('status_code', '—')}")
+            st.write(f"**زمن الاستجابة:** {system.get('response_ms', '—')} ms")
+            st.write(f"**آخر فحص:** {system.get('last_check', '—')}")
+            if system.get("last_error"):
+                st.error(f"الخطأ: {system['last_error']}")
+
+            new_key = st.text_input(
+                "تحديث API Key (اختياري)",
+                type="password",
+                key=f"api_key_{system['id']}",
+            )
+            c1, c2 = st.columns(2)
+            with c1:
+                if st.button("حفظ المفتاح", key=f"save_{system['id']}", use_container_width=True):
+                    if new_key:
+                        st.session_state.api_keys[system["id"]] = new_key
+                        st.success("تم تحديث المفتاح في الجلسة الحالية.")
+                    else:
+                        st.warning("أدخل مفتاحًا أولًا.")
+            with c2:
+                if st.button("حذف المنظومة", key=f"delete_{system['id']}", use_container_width=True):
+                    st.session_state.api_keys.pop(system["id"], None)
+                    st.session_state.systems.pop(index)
+                    save_systems(st.session_state.systems)
+                    st.rerun()
+
+# =========================
+# Statistics
+# =========================
+st.subheader("الإحصائيات")
+if st.session_state.systems:
+    stats_df = pd.DataFrame(
+        {
+            "المؤسسة": [s.get("company", "") for s in st.session_state.systems],
+            "الحالة": [s.get("status", STATUS_LABELS["UNKNOWN"]) for s in st.session_state.systems],
+            "الاستجابة": [s.get("response_ms") or 0 for s in st.session_state.systems],
+        }
+    )
+    fig_status = px.pie(stats_df, names="الحالة", title="توزيع حالات المنظومات")
+    st.plotly_chart(fig_status, use_container_width=True)
+
+    fig_latency = px.bar(
+        stats_df,
+        x="المؤسسة",
+        y="الاستجابة",
+        title="زمن الاستجابة الحالي",
+        labels={"الاستجابة": "ms"},
+    )
+    st.plotly_chart(fig_latency, use_container_width=True)
+
+# =========================
+# Events
+# =========================
+st.subheader("سجل الأحداث")
+events = load_json(LOG_FILE, [])
+if events:
+    events_df = pd.DataFrame(events[::-1])
+    st.dataframe(events_df.head(100), use_container_width=True, hide_index=True)
+else:
+    st.info("لا توجد أحداث انتقال حالة حتى الآن.")
+
+st.caption("GuardianEye — يراقب فقط نقاط النهاية التي يحددها المستخدم وبصلاحية الوصول التي يملكها.")
+
 
