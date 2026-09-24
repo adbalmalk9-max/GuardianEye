@@ -99,133 +99,314 @@ ADMIN_USER = "MalkX03"
 ADMIN_PASSWORD = "KALIABDALMALK107"
 
 # -----------------------------
-# Persistent files
-# -----------------------------
-DATA_FILE = Path("systems.json")
-EVENT_FILE = Path("events.json")
-SETTINGS_FILE = Path("guardian_settings.json")
 
-DEFAULT_SETTINGS = {
-    "check_interval": 15,
-    "default_timeout": 8,
-    "auto_monitor": True,
-}
+# ============================================================
+# Persistent database: Supabase
+# ============================================================
 
+ADMIN_USER = "MalkX03"
+ADMIN_PASSWORD = "KALIABDALMALK107"
 
-def _load_json(path: Path, default):
+def required_secret(name):
     try:
-        if path.exists():
-            with path.open("r", encoding="utf-8") as handle:
-                data = json.load(handle)
-            return data
-    except (OSError, json.JSONDecodeError):
-        pass
-    return default
+        value = str(st.secrets[name]).strip()
+    except Exception as exc:
+        raise RuntimeError(
+            f"Missing Streamlit Secret: {name}"
+        ) from exc
+    if not value:
+        raise RuntimeError(
+            f"Streamlit Secret '{name}' is empty."
+        )
+    return value
 
 
-def _save_json(path: Path, data):
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, ensure_ascii=False, indent=2)
-    tmp.replace(path)
+@st.cache_resource(show_spinner=False)
+def get_supabase():
+    from supabase import create_client
+    return create_client(
+        required_secret("SUPABASE_URL"),
+        required_secret("SUPABASE_SERVICE_ROLE_KEY"),
+    )
+
+
+@st.cache_resource(show_spinner=False)
+def get_fernet():
+    from cryptography.fernet import Fernet
+    return Fernet(
+        required_secret("GUARDIAN_ENCRYPTION_KEY").encode("utf-8")
+    )
+
+
+def encrypt_api_key(value):
+    if not value:
+        return ""
+    return get_fernet().encrypt(
+        value.encode("utf-8")
+    ).decode("utf-8")
+
+
+def decrypt_api_key(value):
+    if not value:
+        return ""
+    try:
+        return get_fernet().decrypt(
+            value.encode("utf-8")
+        ).decode("utf-8")
+    except Exception:
+        return ""
 
 
 def load_systems():
-    data = _load_json(DATA_FILE, [])
-    return data if isinstance(data, list) else []
+    result = (
+        get_supabase()
+        .table("systems")
+        .select(
+            "id,company,url,api_url,api_key_enc,status,"
+            "http_status,response_ms,last_message,last_checked,created_at"
+        )
+        .order("created_at", desc=False)
+        .execute()
+    )
+    return result.data or []
 
 
-def save_systems(data):
-    _save_json(DATA_FILE, data)
+def load_events(limit=500):
+    result = (
+        get_supabase()
+        .table("events")
+        .select(
+            "id,time,system_id,company,old_status,new_status,message"
+        )
+        .order("time", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return result.data or []
 
 
-def load_events():
-    data = _load_json(EVENT_FILE, [])
-    return data if isinstance(data, list) else []
-
-
-def save_events(data):
-    _save_json(EVENT_FILE, data[-500:])
-
-
-def load_settings():
-    data = _load_json(SETTINGS_FILE, {})
-    result = DEFAULT_SETTINGS.copy()
-    if isinstance(data, dict):
-        result.update(data)
-    return result
-
-
-if "systems" not in st.session_state:
-    st.session_state.systems = load_systems()
-if "events" not in st.session_state:
-    st.session_state.events = load_events()
-if "settings" not in st.session_state:
-    st.session_state.settings = load_settings()
-if "logged_in" not in st.session_state:
-    st.session_state.logged_in = False
-if "page" not in st.session_state:
-    st.session_state.page = "Overview"
-if "last_monitor_run" not in st.session_state:
-    st.session_state.last_monitor_run = 0.0
-
-# API keys are kept only in the current Streamlit session.
-# They are NEVER written to systems.json.
-if "api_keys" not in st.session_state:
-    st.session_state.api_keys = {}
-
-# Remove any legacy _api_key values that may exist in an older
-# systems.json from a previous version of GuardianEye.
-for _system in st.session_state.systems:
-    _system.pop("_api_key", None)
-
-
-def now_string():
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-
-def short_id(value):
-    return value[:8] if value else "—"
-
-
-def status_badge(status):
-    mapping = {
-        "Healthy": ("pill-good", "● Healthy"),
-        "Slow": ("pill-warn", "● Slow"),
-        "Down": ("pill-bad", "● Down"),
-        "Auth Error": ("pill-bad", "● Auth Error"),
-        "Not Checked": ("pill-neutral", "● Not Checked"),
-    }
-    css, label = mapping.get(status, ("pill-neutral", f"● {status}"))
-    return f'<span class="status-pill {css}">{label}</span>'
-
-
-def response_ms_text(value):
-    return "—" if value is None else f"{value:.0f} ms"
-
-
-def add_event(system, old_status, new_status, message):
-    event = {
+def create_system(company, url, api_url, api_key):
+    row = {
         "id": str(uuid.uuid4()),
-        "time": now_string(),
+        "company": company.strip(),
+        "url": url.strip(),
+        "api_url": api_url.strip(),
+        "api_key_enc": encrypt_api_key(api_key.strip()),
+        "status": "Not Checked",
+        "http_status": None,
+        "response_ms": None,
+        "last_message": "Waiting for first check.",
+    }
+    return (
+        get_supabase()
+        .table("systems")
+        .insert(row)
+        .execute()
+    )
+
+
+def update_system(system):
+    payload = {
+        "status": system.get("status"),
+        "http_status": system.get("http_status"),
+        "response_ms": system.get("response_ms"),
+        "last_message": system.get("last_message"),
+        "last_checked": system.get("last_checked"),
+    }
+    return (
+        get_supabase()
+        .table("systems")
+        .update(payload)
+        .eq("id", system["id"])
+        .execute()
+    )
+
+
+def create_event(system, old_status, new_status, message):
+    row = {
+        "id": str(uuid.uuid4()),
         "system_id": system["id"],
         "company": system["company"],
         "old_status": old_status,
         "new_status": new_status,
         "message": message,
     }
-    st.session_state.events.append(event)
-    save_events(st.session_state.events)
+    return (
+        get_supabase()
+        .table("events")
+        .insert(row)
+        .execute()
+    )
+
+
+def permanently_delete_system(system_id):
+    # Hard delete: remove audit records then the actual system row.
+    get_supabase().table("events").delete().eq(
+        "system_id", system_id
+    ).execute()
+
+    return (
+        get_supabase().table("systems").delete()
+        .eq("id", system_id)
+        .execute()
+    )
+
+
+def database_error(exc):
+    text = str(exc).strip()
+    return text[:400] if text else "Unknown database error."
+
+
+def run_monitoring():
+    now = time.time()
+    last = st.session_state.get(
+        "last_monitor_run",
+        0.0,
+    )
+
+    if now - last < 15:
+        return
+
+    st.session_state.last_monitor_run = now
+
+    try:
+        systems = load_systems()
+    except Exception:
+        return
+
+    for system in systems:
+        result = check_system(system)
+        old_status = system.get(
+            "status",
+            "Not Checked",
+        )
+
+        system.update(
+            {
+                "status": result["status"],
+                "http_status": result["http_status"],
+                "response_ms": result["response_ms"],
+                "last_message": result["message"],
+                "last_checked": (
+                    datetime.datetime.now(
+                        datetime.timezone.utc
+                    ).isoformat()
+                ),
+            }
+        )
+
+        if (
+            old_status != "Not Checked"
+            and old_status != result["status"]
+        ):
+            try:
+                create_event(
+                    system,
+                    old_status,
+                    result["status"],
+                    result["message"],
+                )
+            except Exception:
+                pass
+
+        try:
+            update_system(system)
+        except Exception:
+            pass
 
 
 # -----------------------------
+# Streamlit session state
+# -----------------------------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
+
+if "last_monitor_run" not in st.session_state:
+    st.session_state.last_monitor_run = 0.0
+
+if "page" not in st.session_state:
+    st.session_state.page = "Overview"
+
+
+
+# ============================================================
+# Authentication
+# ============================================================
+
+def login():
+    st.markdown(
+        """
+        <div style="
+            max-width:620px;
+            margin:8vh auto 0 auto;
+            padding:2rem;
+            border-radius:22px;
+            border:1px solid rgba(148,163,184,.16);
+            background:#101722;
+            box-shadow:0 25px 70px rgba(0,0,0,.35);
+        ">
+            <div style="font-size:3rem">🛡️</div>
+            <div class="guardian-title">GuardianEye</div>
+            <div class="guardian-subtitle">
+                مركز مراقبة المنظومات والخدمات المصرّح لك بإدارتها
+            </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    username = st.text_input(
+        "اسم المستخدم",
+        placeholder="أدخل اسم المستخدم",
+        key="login_username",
+    )
+    password = st.text_input(
+        "كلمة المرور",
+        type="password",
+        placeholder="أدخل كلمة المرور",
+        key="login_password",
+    )
+
+    if st.button(
+        "دخول إلى مركز المراقبة",
+        use_container_width=True,
+    ):
+        if (
+            username == ADMIN_USER
+            and password == ADMIN_PASSWORD
+        ):
+            st.session_state.logged_in = True
+            st.rerun()
+        else:
+            st.error("بيانات الدخول غير صحيحة.")
+
+    st.markdown(
+        '<div class="small-muted" style="margin-top:1rem">'
+        "الوصول محمي. لا تشارك بيانات الدخول."
+        "</div></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.pop("login_password", None)
+    st.rerun()
+
+
+# ============================================================
 # Monitoring engine
-# -----------------------------
+# ============================================================
 
 def check_system(system):
-    target = (system.get("api_url") or system.get("url") or "").strip()
-    api_key = st.session_state.api_keys.get(system.get("id"), "").strip()
-    timeout = int(st.session_state.settings["default_timeout"])
+    target = (
+        system.get("api_url")
+        or system.get("url")
+        or ""
+    ).strip()
+
+    api_key = decrypt_api_key(
+        system.get("api_key_enc", "")
+    )
 
     if not target:
         return {
@@ -236,21 +417,26 @@ def check_system(system):
         }
 
     headers = {
-        "User-Agent": "GuardianEye-Monitor/1.0",
+        "User-Agent": "GuardianEye-Monitor/4.0",
         "Accept": "application/json, text/plain, */*",
     }
+
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
     started = time.perf_counter()
+
     try:
         response = requests.get(
             target,
             headers=headers,
-            timeout=timeout,
+            timeout=8,
             allow_redirects=True,
         )
-        elapsed = (time.perf_counter() - started) * 1000
+
+        elapsed = (
+            time.perf_counter() - started
+        ) * 1000
         code = response.status_code
 
         if code in (401, 403):
@@ -275,8 +461,9 @@ def check_system(system):
             "status": "Down",
             "http_status": None,
             "response_ms": None,
-            "message": f"Request timeout after {timeout}s.",
+            "message": "Request timed out after 8 seconds.",
         }
+
     except requests.exceptions.RequestException as exc:
         return {
             "status": "Down",
@@ -286,116 +473,74 @@ def check_system(system):
         }
 
 
-def run_monitoring():
-    if not st.session_state.settings.get("auto_monitor", True):
-        return
-
-    interval = int(st.session_state.settings["check_interval"])
-    now = time.time()
-    if now - st.session_state.last_monitor_run < interval:
-        return
-
-    st.session_state.last_monitor_run = now
-    changed = False
-
-    for system in st.session_state.systems:
-        result = check_system(system)
-        old_status = system.get("status", "Not Checked")
-        system.update(
-            {
-                "status": result["status"],
-                "http_status": result["http_status"],
-                "response_ms": result["response_ms"],
-                "last_message": result["message"],
-                "last_checked": now_string(),
-            }
-        )
-
-        if old_status != "Not Checked" and old_status != result["status"]:
-            add_event(system, old_status, result["status"], result["message"])
-        changed = True
-
-    if changed:
-        save_systems(st.session_state.systems)
-
-
-# -----------------------------
-# Login
-# -----------------------------
-
-def login():
-    st.markdown(
-        """
-        <div style="max-width:620px;margin:8vh auto 0 auto;padding:2rem;border-radius:22px;
-                    border:1px solid rgba(148,163,184,.16);background:#101722;
-                    box-shadow:0 25px 70px rgba(0,0,0,.35);">
-            <div style="font-size:3rem">🛡️</div>
-            <div class="guardian-title">GuardianEye</div>
-            <div class="guardian-subtitle">مركز مراقبة المنظومات والخدمات المصرّح لك بإدارتها</div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
-    password = st.text_input(
-        "كلمة المرور",
-        type="password",
-        placeholder="أدخل كلمة المرور",
-        key="login_password",
-    )
-
-    if st.button("دخول إلى مركز المراقبة", use_container_width=True):
-        if username == ADMIN_USER and password == ADMIN_PASSWORD:
-            st.session_state.logged_in = True
-            st.rerun()
-        else:
-            st.error("بيانات الدخول غير صحيحة.")
-
-    st.markdown(
-        '<div class="small-muted" style="margin-top:1rem">الوصول محمي. لا تشارك بيانات الدخول.</div></div>',
-        unsafe_allow_html=True,
-    )
-
-
-def logout():
-    st.session_state.logged_in = False
-    st.session_state.login_username = ""
-    st.session_state.login_password = ""
-    st.rerun()
-
-
-# -----------------------------
+# ============================================================
 # Pages
-# -----------------------------
+# ============================================================
 
 def overview_page():
     run_monitoring()
-    systems = st.session_state.systems
-    healthy = sum(1 for s in systems if s.get("status") == "Healthy")
-    slow = sum(1 for s in systems if s.get("status") == "Slow")
-    incidents = sum(1 for s in systems if s.get("status") in ("Down", "Auth Error"))
 
-    st.markdown('<div class="guardian-title">GuardianEye</div>', unsafe_allow_html=True)
-    st.markdown('<div class="guardian-subtitle">مركز المراقبة المركزي للمنظومات والخدمات</div>', unsafe_allow_html=True)
+    try:
+        systems = load_systems()
+        events = load_events()
+    except Exception as exc:
+        st.error("تعذر الاتصال بقاعدة البيانات.")
+        st.code(database_error(exc))
+        return
 
-    metrics = [
-        ("المنظومات", len(systems), "إجمالي الأنظمة"),
+    healthy = sum(
+        1 for system in systems
+        if system.get("status") == "Healthy"
+    )
+    slow = sum(
+        1 for system in systems
+        if system.get("status") == "Slow"
+    )
+    incidents = sum(
+        1 for system in systems
+        if system.get("status")
+        in ("Down", "Auth Error")
+    )
+
+    st.markdown(
+        '<div class="guardian-title">GuardianEye</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="guardian-subtitle">'
+        "مركز المراقبة المركزي للمنظومات والخدمات"
+        "</div>",
+        unsafe_allow_html=True,
+    )
+
+    values = [
+        ("المنظومات", len(systems), "من قاعدة البيانات"),
         ("Healthy", healthy, "استجابة طبيعية"),
         ("Slow", slow, "زمن استجابة مرتفع"),
         ("Incidents", incidents, "حالات تحتاج انتباه"),
     ]
-    cols = st.columns(4)
-    for col, (label, value, note) in zip(cols, metrics):
-        with col:
+
+    columns = st.columns(4)
+    for column, (label, value, note) in zip(
+        columns,
+        values,
+    ):
+        with column:
             st.markdown(
-                f'<div class="metric-card"><div class="metric-label">{label}</div>'
-                f'<div class="metric-value">{value}</div><div class="metric-note">{note}</div></div>',
+                f'<div class="metric-card">'
+                f'<div class="metric-label">{label}</div>'
+                f'<div class="metric-value">{value}</div>'
+                f'<div class="metric-note">{note}</div>'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
     st.write("")
+
     if not systems:
-        st.info("لا توجد منظومات بعد. استخدم «إضافة منظومة» لبدء المراقبة.")
+        st.info(
+            "لا توجد منظومات. استخدم «إضافة منظومة»."
+        )
         return
 
     rows = []
@@ -403,37 +548,70 @@ def overview_page():
         rows.append(
             {
                 "ID": short_id(system.get("id")),
-                "المنظومة": system.get("company", "—"),
-                "الحالة": system.get("status", "Not Checked"),
-                "HTTP": system.get("http_status") or "—",
-                "Response": response_ms_text(system.get("response_ms")),
-                "آخر فحص": system.get("last_checked") or "—",
-                "آخر نتيجة": system.get("last_message", "—"),
+                "المنظومة": system.get(
+                    "company",
+                    "—",
+                ),
+                "الحالة": system.get(
+                    "status",
+                    "Not Checked",
+                ),
+                "HTTP": system.get(
+                    "http_status"
+                ) or "—",
+                "Response": response_ms_text(
+                    system.get("response_ms")
+                ),
+                "آخر فحص": system.get(
+                    "last_checked"
+                ) or "—",
+                "آخر نتيجة": system.get(
+                    "last_message"
+                ) or "—",
             }
         )
 
     st.subheader("حالة المنظومات")
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.dataframe(
+        pd.DataFrame(rows),
+        use_container_width=True,
+        hide_index=True,
+    )
 
     st.subheader("آخر الأحداث")
-    recent = list(reversed(st.session_state.events[-8:]))
-    if not recent:
-        st.info("لا توجد أحداث مسجلة حتى الآن.")
+
+    if not events:
+        st.info("لا توجد أحداث بعد.")
     else:
-        for event in recent:
+        for event in events[:8]:
             st.markdown(
-                f'<div class="incident-row"><strong>{event["company"]}</strong>'
-                f'<span class="small-muted"> · {event["time"]}</span><br>'
-                f'{event["old_status"]} → {event["new_status"]} · {event["message"]}</div>',
+                f'<div class="incident-row">'
+                f'<strong>{event["company"]}</strong>'
+                f'<span class="small-muted"> · {event["time"]}'
+                f'</span><br>'
+                f'{event["old_status"]}'
+                f' → {event["new_status"]}'
+                f' · {event["message"]}'
+                f'</div>',
                 unsafe_allow_html=True,
             )
 
 
 def add_system_page():
     st.header("إضافة منظومة")
-    with st.form("add_system_form", clear_on_submit=True):
-        company = st.text_input("اسم الشركة / المؤسسة")
-        url = st.text_input("الرابط الرئيسي", placeholder="https://example.com")
+
+    with st.form(
+        "add_system_form",
+        clear_on_submit=True,
+    ):
+        company = st.text_input(
+            "اسم الشركة / المؤسسة",
+            placeholder="Example Corp",
+        )
+        url = st.text_input(
+            "الرابط الرئيسي",
+            placeholder="https://example.com",
+        )
         api_url = st.text_input(
             "Endpoint المراقبة / API",
             placeholder="https://example.com/api/health",
@@ -441,212 +619,454 @@ def add_system_page():
         api_key = st.text_input(
             "مفتاح API",
             type="password",
-            help="يُستخدم أثناء الفحص ولا يُحفظ داخل systems.json أو GitHub.",
+            help=(
+                "يُشفّر قبل تخزينه في قاعدة البيانات "
+                "ولا يظهر في لوحة المراقبة."
+            ),
         )
-        st.caption("🔐 المفتاح يبقى في جلسة GuardianEye الحالية ولا يُكتب في ملف الأنظمة.")
-        submitted = st.form_submit_button("إضافة المنظومة", use_container_width=True)
+
+        submitted = st.form_submit_button(
+            "إضافة المنظومة",
+            use_container_width=True,
+        )
 
     if not submitted:
         return
 
-    if not company.strip() or not (url.strip() or api_url.strip()):
-        st.error("أدخل اسم المنظومة ورابطًا صالحًا للمراقبة.")
+    if not company.strip():
+        st.error(
+            "اكتب اسم الشركة أو المؤسسة."
+        )
         return
 
-    system = {
-        "id": str(uuid.uuid4()),
-        "company": company.strip(),
-        "url": url.strip(),
-        "api_url": api_url.strip(),
-        "status": "Not Checked",
-        "http_status": None,
-        "response_ms": None,
-        "last_message": "Waiting for first check.",
-        "last_checked": None,
-        "created_at": now_string(),
-    }
+    if not (
+        url.strip()
+        or api_url.strip()
+    ):
+        st.error(
+            "أدخل رابطًا صالحًا للمراقبة."
+        )
+        return
 
-    # Keep the API key only in Streamlit session memory.
-    # It is intentionally not part of the persisted system record.
-    st.session_state.api_keys[system["id"]] = api_key.strip()
+    try:
+        create_system(
+            company,
+            url,
+            api_url,
+            api_key,
+        )
+    except Exception as exc:
+        st.error("فشل حفظ المنظومة.")
+        st.code(database_error(exc))
+        return
 
-    st.session_state.systems.append(system)
-    save_systems(st.session_state.systems)
-    st.success(f"تمت إضافة {company.strip()}.")
+    st.success(
+        "تمت إضافة المنظومة إلى قاعدة البيانات."
+    )
     st.rerun()
 
 
 def systems_page():
     run_monitoring()
-    st.header("المنظومات")
-    if not st.session_state.systems:
-        st.info("لا توجد منظومات مسجلة.")
+
+    try:
+        systems = load_systems()
+    except Exception as exc:
+        st.error(
+            "تعذر تحميل المنظومات."
+        )
+        st.code(database_error(exc))
         return
 
-    for system in st.session_state.systems:
-        with st.expander(f'{system.get("company", "Unknown")} · {system.get("status", "Not Checked")}'):
-            left, right = st.columns([2.2, 1])
+    st.header("المنظومات")
+
+    if not systems:
+        st.info(
+            "لا توجد منظومات مسجلة."
+        )
+        return
+
+    st.caption(
+        "🛡️ الحذف النهائي يتم مباشرة من قاعدة البيانات."
+    )
+
+    for system in systems:
+        system_id = system["id"]
+        company = system.get(
+            "company",
+            "Unknown",
+        )
+        status = system.get(
+            "status",
+            "Not Checked",
+        )
+
+        with st.container(border=True):
+            top_left, top_right = st.columns(
+                [3, 1]
+            )
+
+            with top_left:
+                st.markdown(
+                    f'<div style="font-size:1.25rem;'
+                    f'font-weight:800">'
+                    f'{company}</div>',
+                    unsafe_allow_html=True,
+                )
+                st.caption(
+                    f"ID: {short_id(system_id)}"
+                )
+
+            with top_right:
+                st.markdown(
+                    status_badge(status),
+                    unsafe_allow_html=True,
+                )
+
+            left, middle, right = st.columns(
+                [1.6, 1.2, 1]
+            )
+
             with left:
-                st.markdown(status_badge(system.get("status", "Not Checked")), unsafe_allow_html=True)
-                st.write(f'**الرابط:** {system.get("url") or "—"}')
-                st.write(f'**API / Health Endpoint:** {system.get("api_url") or "—"}')
-                st.write(f'**HTTP:** {system.get("http_status") or "—"}')
-                st.write(f'**Response Time:** {response_ms_text(system.get("response_ms"))}')
-                st.write(f'**آخر فحص:** {system.get("last_checked") or "—"}')
-                st.caption(system.get("last_message", ""))
+                st.write(
+                    f"**الرابط:** "
+                    f"{system.get('url') or '—'}"
+                )
+                st.write(
+                    f"**Endpoint:** "
+                    f"{system.get('api_url') or '—'}"
+                )
+
+            with middle:
+                st.write(
+                    f"**HTTP:** "
+                    f"{system.get('http_status') or '—'}"
+                )
+                st.write(
+                    f"**Response:** "
+                    f"{response_ms_text(system.get('response_ms'))}"
+                )
+                st.caption(
+                    system.get(
+                        "last_message"
+                    ) or "—"
+                )
 
             with right:
-                if st.button("فحص الآن", key=f'check_{system["id"]}', use_container_width=True):
-                    result = check_system(system)
-                    old_status = system.get("status", "Not Checked")
+                if st.button(
+                    "🔄 فحص الآن",
+                    key=f"check_{system_id}",
+                    use_container_width=True,
+                ):
+                    result = check_system(
+                        system
+                    )
+                    old_status = system.get(
+                        "status",
+                        "Not Checked",
+                    )
+
                     system.update(
                         {
                             "status": result["status"],
-                            "http_status": result["http_status"],
-                            "response_ms": result["response_ms"],
-                            "last_message": result["message"],
-                            "last_checked": now_string(),
+                            "http_status": result[
+                                "http_status"
+                            ],
+                            "response_ms": result[
+                                "response_ms"
+                            ],
+                            "last_message": result[
+                                "message"
+                            ],
+                            "last_checked": (
+                                datetime.datetime.now(
+                                    datetime.timezone.utc
+                                ).isoformat()
+                            ),
                         }
                     )
-                    if old_status != "Not Checked" and old_status != result["status"]:
-                        add_event(system, old_status, result["status"], result["message"])
-                    save_systems(st.session_state.systems)
+
+                    if (
+                        old_status != "Not Checked"
+                        and old_status
+                        != result["status"]
+                    ):
+                        try:
+                            create_event(
+                                system,
+                                old_status,
+                                result["status"],
+                                result["message"],
+                            )
+                        except Exception:
+                            pass
+
+                    try:
+                        update_system(system)
+                    except Exception as exc:
+                        st.error(
+                            "فشل تحديث نتيجة الفحص."
+                        )
+                        st.code(
+                            database_error(exc)
+                        )
+                    else:
+                        st.success(
+                            "تم تنفيذ الفحص."
+                        )
+                        st.rerun()
+
+                if st.button(
+                    "🗑️ حذف نهائي",
+                    key=f"delete_{system_id}",
+                    use_container_width=True,
+                ):
+                    st.session_state[
+                        f"confirm_delete_{system_id}"
+                    ] = True
                     st.rerun()
 
-                if st.button("حذف نهائي", key=f'delete_{system["id"]}', use_container_width=True):
-                    system_id = system["id"]
-                    deleted_name = system.get("company", "Unknown")
+            if st.session_state.get(
+                f"confirm_delete_{system_id}",
+                False,
+            ):
+                st.error(
+                    f"سيتم حذف «{company}» "
+                    "نهائيًا من قاعدة البيانات."
+                )
 
-                    # Remove from persistent systems file first.
-                    st.session_state.systems = [
-                        item for item in st.session_state.systems if item.get("id") != system_id
-                    ]
-                    save_systems(st.session_state.systems)
+                yes, no = st.columns(2)
 
-                    # Remove the in-memory API key together with the system.
-                    st.session_state.api_keys.pop(system_id, None)
+                with yes:
+                    if st.button(
+                        "تأكيد الحذف النهائي",
+                        key=f"confirm_yes_{system_id}",
+                        use_container_width=True,
+                    ):
+                        try:
+                            permanently_delete_system(
+                                system_id
+                            )
+                        except Exception as exc:
+                            st.error(
+                                "فشل الحذف من قاعدة البيانات."
+                            )
+                            st.code(
+                                database_error(exc)
+                            )
+                        else:
+                            st.success(
+                                f"تم حذف «{company}» "
+                                "نهائيًا."
+                            )
+                            st.session_state.pop(
+                                f"confirm_delete_{system_id}",
+                                None,
+                            )
+                            st.rerun()
 
-                    # Also remove its related audit events permanently.
-                    st.session_state.events = [
-                        event for event in st.session_state.events if event.get("system_id") != system_id
-                    ]
-                    save_events(st.session_state.events)
-
-                    st.success(f"تم حذف {deleted_name} نهائيًا من التخزين.")
-                    st.rerun()
+                with no:
+                    if st.button(
+                        "إلغاء",
+                        key=f"confirm_no_{system_id}",
+                        use_container_width=True,
+                    ):
+                        st.session_state.pop(
+                            f"confirm_delete_{system_id}",
+                            None,
+                        )
+                        st.rerun()
 
 
 def analytics_page():
     run_monitoring()
+
+    try:
+        systems = load_systems()
+    except Exception as exc:
+        st.error(
+            "تعذر تحميل بيانات التحليل."
+        )
+        st.code(database_error(exc))
+        return
+
     st.header("التحليلات")
-    systems = st.session_state.systems
+
     if not systems:
-        st.info("أضف منظومات أولًا.")
+        st.info(
+            "أضف منظومات أولًا."
+        )
         return
 
     df = pd.DataFrame(
         [
             {
-                "company": s.get("company", "Unknown"),
-                "status": s.get("status", "Not Checked"),
-                "response_ms": s.get("response_ms"),
+                "company": system.get(
+                    "company",
+                    "Unknown",
+                ),
+                "status": system.get(
+                    "status",
+                    "Not Checked",
+                ),
+                "response_ms": system.get(
+                    "response_ms"
+                ),
             }
-            for s in systems
+            for system in systems
         ]
     )
 
-    col1, col2 = st.columns(2)
-    with col1:
-        counts = df["status"].value_counts().reset_index()
-        counts.columns = ["status", "count"]
-        fig = px.pie(counts, names="status", values="count", hole=.58, title="توزيع الحالات")
-        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-        st.plotly_chart(fig, use_container_width=True)
+    left, right = st.columns(2)
 
-    with col2:
-        r = df.dropna(subset=["response_ms"])
-        if r.empty:
-            st.info("لا توجد قياسات Response Time كافية.")
+    with left:
+        counts = (
+            df["status"]
+            .value_counts()
+            .reset_index()
+        )
+        counts.columns = [
+            "status",
+            "count",
+        ]
+
+        fig = px.pie(
+            counts,
+            names="status",
+            values="count",
+            hole=.58,
+            title="توزيع الحالات",
+        )
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+        )
+        st.plotly_chart(
+            fig,
+            use_container_width=True,
+        )
+
+    with right:
+        response = df.dropna(
+            subset=["response_ms"]
+        )
+
+        if response.empty:
+            st.info(
+                "لا توجد قياسات Response Time كافية."
+            )
         else:
-            fig = px.bar(r, x="company", y="response_ms", title="Response Time", labels={"response_ms": "ms", "company": ""})
-            fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
-            st.plotly_chart(fig, use_container_width=True)
+            fig = px.bar(
+                response,
+                x="company",
+                y="response_ms",
+                title="Response Time",
+                labels={
+                    "response_ms": "ms",
+                    "company": "",
+                },
+            )
+            fig.update_layout(
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+            )
+            st.plotly_chart(
+                fig,
+                use_container_width=True,
+            )
 
 
 def events_page():
     st.header("سجل الأحداث")
-    events = list(reversed(st.session_state.events))
+
+    try:
+        events = load_events()
+    except Exception as exc:
+        st.error(
+            "تعذر تحميل سجل الأحداث."
+        )
+        st.code(database_error(exc))
+        return
+
     if not events:
         st.info("لا توجد أحداث بعد.")
         return
 
     for event in events:
         st.markdown(
-            f'<div class="incident-row"><strong>{event["company"]}</strong>'
-            f'<span class="small-muted"> · {event["time"]} · {short_id(event["id"])}</span><br>'
-            f'الحالة: {event["old_status"]} → {event["new_status"]}<br>{event["message"]}</div>',
+            f'<div class="incident-row">'
+            f'<strong>{event["company"]}</strong>'
+            f'<span class="small-muted"> · {event["time"]} · '
+            f'{short_id(event["id"])}'
+            f'</span><br>'
+            f'الحالة: {event["old_status"]}'
+            f' → {event["new_status"]}<br>'
+            f'{event["message"]}'
+            f'</div>',
             unsafe_allow_html=True,
         )
 
 
-def settings_page():
-    st.header("إعدادات المراقبة")
-    interval = st.number_input(
-        "فترة الفحص بالثواني",
-        min_value=5,
-        max_value=3600,
-        value=int(st.session_state.settings["check_interval"]),
-        step=5,
-    )
-    timeout = st.number_input(
-        "مهلة طلب HTTP بالثواني",
-        min_value=2,
-        max_value=60,
-        value=int(st.session_state.settings["default_timeout"]),
-        step=1,
-    )
-    auto_monitor = st.checkbox(
-        "تفعيل المراقبة التلقائية",
-        value=bool(st.session_state.settings["auto_monitor"]),
-    )
-
-    if st.button("حفظ إعدادات المراقبة", use_container_width=True):
-        st.session_state.settings.update(
-            {
-                "check_interval": int(interval),
-                "default_timeout": int(timeout),
-                "auto_monitor": bool(auto_monitor),
-            }
-        )
-        _save_json(SETTINGS_FILE, st.session_state.settings)
-        st.success("تم حفظ إعدادات المراقبة.")
-
-
-# -----------------------------
+# ============================================================
 # Router
-# -----------------------------
+# ============================================================
 
 if not st.session_state.logged_in:
     login()
     st.stop()
 
+
 with st.sidebar:
     st.markdown(
-        '<div style="font-size:1.8rem;font-weight:800">🛡️ GuardianEye</div>'
-        '<div class="small-muted">Operations Monitoring Center</div>',
+        '<div style="font-size:1.8rem;font-weight:800">'
+        '🛡️ GuardianEye'
+        '</div>'
+        '<div class="small-muted">'
+        'Operations Monitoring Center'
+        '</div>',
         unsafe_allow_html=True,
     )
+
     st.divider()
 
-    pages = ["Overview", "Systems", "Add System", "Analytics", "Events", "Settings"]
-    st.session_state.page = st.radio("Navigation", pages, index=pages.index(st.session_state.page))
+    pages = [
+        "Overview",
+        "Systems",
+        "Add System",
+        "Analytics",
+        "Events",
+    ]
+
+    current_index = (
+        pages.index(st.session_state.page)
+        if st.session_state.page in pages
+        else 0
+    )
+
+    st.session_state.page = st.radio(
+        "Navigation",
+        pages,
+        index=current_index,
+    )
+
     st.divider()
+
     st.markdown(
-        f'<div class="small-muted">Logged in as<br><strong style="color:#edf4ff">{ADMIN_USER}</strong></div>',
+        f'<div class="small-muted">'
+        f'Logged in as<br>'
+        f'<strong style="color:#edf4ff">'
+        f'{ADMIN_USER}'
+        f'</strong>'
+        f'</div>',
         unsafe_allow_html=True,
     )
-    if st.button("تسجيل الخروج", use_container_width=True):
+
+    if st.button(
+        "تسجيل الخروج",
+        use_container_width=True,
+    ):
         logout()
+
 
 if st.session_state.page == "Overview":
     overview_page()
@@ -658,5 +1078,3 @@ elif st.session_state.page == "Analytics":
     analytics_page()
 elif st.session_state.page == "Events":
     events_page()
-elif st.session_state.page == "Settings":
-    settings_page()
