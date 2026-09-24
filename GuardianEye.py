@@ -1,6 +1,5 @@
-import datetime as dt
+import datetime
 import json
-import os
 import time
 import uuid
 from pathlib import Path
@@ -11,417 +10,653 @@ import requests
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 
-# =========================
-# App configuration
-# =========================
-st.set_page_config(page_title="GuardianEye", page_icon="🛡️", layout="wide")
+# ============================================================
+# GuardianEye - Monitoring Center
+# ============================================================
 
-DATA_FILE = Path("systems.json")
-LOG_FILE = Path("events.json")
-CHECK_INTERVAL_SECONDS = 15
-REQUEST_TIMEOUT_SECONDS = 8
+st.set_page_config(
+    page_title="GuardianEye",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-STATUS_LABELS = {
-    "HEALTHY": "✅ سليم",
-    "DEGRADED": "⚠️ بطيء",
-    "DOWN": "🔴 متوقف",
-    "AUTH_ERROR": "🔐 فشل المصادقة",
-    "ERROR": "❌ خطأ",
-    "UNKNOWN": "❔ غير مفحوص",
-}
-
-# =========================
-# Minimal UI styling
-# =========================
+# -----------------------------
+# Visual system
+# -----------------------------
 st.markdown(
     """
-    <style>
-    .guardian-card {
-        border: 1px solid rgba(148, 163, 184, .20);
-        border-radius: 14px;
-        padding: 16px;
-        background: rgba(15, 23, 42, .55);
-        margin-bottom: 12px;
-    }
-    .muted { color: #94a3b8; font-size: 0.9rem; }
-    </style>
-    """,
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+
+:root {
+    --bg: #090d14;
+    --panel: #101722;
+    --panel2: #151e2c;
+    --line: rgba(148,163,184,.16);
+    --text: #edf4ff;
+    --muted: #8ea0b9;
+    --accent: #35a8ff;
+    --good: #26d07c;
+    --warn: #ffb84d;
+    --bad: #ff5d6c;
+}
+
+html, body, [class*="css"] { font-family: "Cairo", sans-serif; }
+body {
+    background:
+        radial-gradient(circle at 15% 10%, rgba(53,168,255,.10), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(38,208,124,.08), transparent 24%),
+        var(--bg);
+    color: var(--text);
+}
+.block-container { max-width: 1500px; padding-top: 1.5rem; }
+
+.guardian-title { font-size: 2.65rem; font-weight: 800; letter-spacing: -.03em; }
+.guardian-subtitle { color: var(--muted); margin-top: .15rem; margin-bottom: 1.6rem; }
+
+.status-pill {
+    display: inline-block; padding: .28rem .72rem; border-radius: 999px;
+    font-size: .82rem; font-weight: 700; border: 1px solid var(--line);
+}
+.pill-good { background: rgba(38,208,124,.12); color: #6df0ad; }
+.pill-warn { background: rgba(255,184,77,.12); color: #ffd28a; }
+.pill-bad { background: rgba(255,93,108,.12); color: #ff98a1; }
+.pill-neutral { background: rgba(142,160,185,.10); color: #c4d0df; }
+
+.metric-card {
+    background: linear-gradient(180deg, rgba(21,30,44,.92), rgba(16,23,34,.92));
+    border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem;
+    min-height: 125px; box-shadow: 0 12px 32px rgba(0,0,0,.18);
+}
+.metric-label { color: var(--muted); font-size: .86rem; margin-bottom: .45rem; }
+.metric-value { font-size: 1.85rem; font-weight: 800; }
+.metric-note { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
+
+div[data-testid="stSidebar"] { background: #0b1018; border-right: 1px solid var(--line); }
+div[data-testid="stSidebar"] hr { border-color: var(--line); }
+.stButton > button {
+    border-radius: 10px; border: 1px solid rgba(53,168,255,.22);
+    background: #111b28; color: var(--text); font-weight: 700; transition: .18s ease;
+}
+.stButton > button:hover { border-color: rgba(53,168,255,.60); background: #16263a; }
+div[data-testid="stTextInput"] input { background: #0d141f; color: var(--text); border-color: var(--line); }
+.small-muted { color: var(--muted); font-size: .82rem; }
+.incident-row { padding: .75rem 0; border-bottom: 1px solid var(--line); }
+</style>
+""",
     unsafe_allow_html=True,
 )
 
-# =========================
-# Persistence helpers
-# =========================
-def load_json(path: Path, default):
-    if not path.exists():
-        return default
+# Refresh the interface every 5 seconds; monitoring itself is rate-limited.
+st_autorefresh(interval=5000, limit=None, key="guardian_ui_refresh")
+
+# -----------------------------
+# Requested admin account
+# -----------------------------
+# For a public production deployment, move these to Streamlit Secrets/OIDC.
+ADMIN_USER = "MalkX03"
+ADMIN_PASSWORD = "KALIABDALMALK107"
+
+# -----------------------------
+# Persistent files
+# -----------------------------
+DATA_FILE = Path("systems.json")
+EVENT_FILE = Path("events.json")
+SETTINGS_FILE = Path("guardian_settings.json")
+
+DEFAULT_SETTINGS = {
+    "check_interval": 15,
+    "default_timeout": 8,
+    "auto_monitor": True,
+}
+
+
+def _load_json(path: Path, default):
     try:
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
-        return default
+        if path.exists():
+            with path.open("r", encoding="utf-8") as handle:
+                data = json.load(handle)
+            return data
+    except (OSError, json.JSONDecodeError):
+        pass
+    return default
 
 
-def save_json(path: Path, data):
-    temp_path = path.with_suffix(path.suffix + ".tmp")
-    with temp_path.open("w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    temp_path.replace(path)
+def _save_json(path: Path, data):
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as handle:
+        json.dump(data, handle, ensure_ascii=False, indent=2)
+    tmp.replace(path)
 
 
 def load_systems():
-    raw = load_json(DATA_FILE, [])
-    systems = []
-    for item in raw:
-        system = dict(item)
-        # Never persist API secrets in systems.json.
-        system.pop("api_key", None)
-        system.setdefault("id", str(uuid.uuid4()))
-        system.setdefault("status_code", None)
-        system.setdefault("response_ms", None)
-        system.setdefault("last_error", None)
-        system.setdefault("last_check", None)
-        system.setdefault("check_count", 0)
-        system.setdefault("last_state", "UNKNOWN")
-        systems.append(system)
-    return systems
+    data = _load_json(DATA_FILE, [])
+    return data if isinstance(data, list) else []
 
 
-def save_systems(systems):
-    safe_systems = []
-    for system in systems:
-        safe = dict(system)
-        # Defensive: remove secrets even if an old object contains one.
-        safe.pop("api_key", None)
-        safe_systems.append(safe)
-    save_json(DATA_FILE, safe_systems)
+def save_systems(data):
+    _save_json(DATA_FILE, data)
 
 
-def append_event(system_name, state, message):
-    events = load_json(LOG_FILE, [])
-    events.append(
-        {
-            "time": dt.datetime.now().isoformat(timespec="seconds"),
-            "system": system_name,
-            "state": state,
-            "message": message,
-        }
-    )
-    save_json(LOG_FILE, events[-500:])
+def load_events():
+    data = _load_json(EVENT_FILE, [])
+    return data if isinstance(data, list) else []
 
 
-# =========================
-# Runtime state
-# =========================
+def save_events(data):
+    _save_json(EVENT_FILE, data[-500:])
+
+
+def load_settings():
+    data = _load_json(SETTINGS_FILE, {})
+    result = DEFAULT_SETTINGS.copy()
+    if isinstance(data, dict):
+        result.update(data)
+    return result
+
+
 if "systems" not in st.session_state:
     st.session_state.systems = load_systems()
-if "api_keys" not in st.session_state:
-    st.session_state.api_keys = {}
+if "events" not in st.session_state:
+    st.session_state.events = load_events()
+if "settings" not in st.session_state:
+    st.session_state.settings = load_settings()
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
+if "page" not in st.session_state:
+    st.session_state.page = "Overview"
+if "last_monitor_run" not in st.session_state:
+    st.session_state.last_monitor_run = 0.0
 
-# =========================
-# Authentication
-# =========================
-import os
-
-ADMIN_USER = os.getenv("GUARDIAN_ADMIN_USER")
-ADMIN_PASSWORD = os.getenv("GUARDIAN_ADMIN_PASSWORD") 
-
-def login():
-    st.sidebar.subheader("تسجيل الدخول")
-
-    if not ADMIN_USER or not ADMIN_PASSWORD:
-        st.sidebar.error("لم يتم ضبط بيانات المدير في متغيرات البيئة.")
-        st.info(
-            "قبل تشغيل النسخة اضبط GUARDIAN_ADMIN_USER "
-            "و GUARDIAN_ADMIN_PASSWORD"
-        )
-        return
-
-    username = st.sidebar.text_input(
-        "اسم المستخدم",
-        key="username_field"
-    )
-
-    password = st.sidebar.text_input(
-        "كلمة المرور",
-        type="password",
-        key="password_field"
-    )
-
-    if st.sidebar.button("دخول", use_container_width=True):
-        if username == ADMIN_USER and password == ADMIN_PASSWORD:
-            st.session_state.logged_in = True
-            st.rerun()
-        else:
-            st.sidebar.error("بيانات الدخول غير صحيحة")
-
-if not st.session_state.logged_in:
-    st.title("🛡️ GuardianEye")
-    st.caption("مركز مراقبة للمنظومات المصرح لك بإدارتها ومراقبتها")
-    login()
-    st.stop()
-
-# =========================
-# Session controls
-# =========================
-def logout():
-    st.session_state.logged_in = False
+# API keys are kept only in the current Streamlit session.
+# They are NEVER written to systems.json.
+if "api_keys" not in st.session_state:
     st.session_state.api_keys = {}
-    st.rerun()
+
+# Remove any legacy _api_key values that may exist in an older
+# systems.json from a previous version of GuardianEye.
+for _system in st.session_state.systems:
+    _system.pop("_api_key", None)
 
 
-st.sidebar.button("تسجيل الخروج", on_click=logout, use_container_width=True)
+def now_string():
+    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-# Refresh the UI, but do not hammer targets every second.
-st_autorefresh(interval=1000, limit=None, key="guardian_refresh")
 
-# =========================
+def short_id(value):
+    return value[:8] if value else "—"
+
+
+def status_badge(status):
+    mapping = {
+        "Healthy": ("pill-good", "● Healthy"),
+        "Slow": ("pill-warn", "● Slow"),
+        "Down": ("pill-bad", "● Down"),
+        "Auth Error": ("pill-bad", "● Auth Error"),
+        "Not Checked": ("pill-neutral", "● Not Checked"),
+    }
+    css, label = mapping.get(status, ("pill-neutral", f"● {status}"))
+    return f'<span class="status-pill {css}">{label}</span>'
+
+
+def response_ms_text(value):
+    return "—" if value is None else f"{value:.0f} ms"
+
+
+def add_event(system, old_status, new_status, message):
+    event = {
+        "id": str(uuid.uuid4()),
+        "time": now_string(),
+        "system_id": system["id"],
+        "company": system["company"],
+        "old_status": old_status,
+        "new_status": new_status,
+        "message": message,
+    }
+    st.session_state.events.append(event)
+    save_events(st.session_state.events)
+
+
+# -----------------------------
 # Monitoring engine
-# =========================
-def classify_state(status_code, response_ms, error=None):
-    if error == "AUTH_ERROR":
-        return "AUTH_ERROR"
-    if error:
-        return "ERROR"
-    if status_code is None:
-        return "UNKNOWN"
-    if 200 <= status_code < 400:
-        return "HEALTHY" if response_ms is not None and response_ms < 1000 else "DEGRADED"
-    if status_code in (401, 403):
-        return "AUTH_ERROR"
-    if 400 <= status_code < 600:
-        return "DOWN"
-    return "ERROR"
-
+# -----------------------------
 
 def check_system(system):
-    url = (system.get("api_url") or system.get("url") or "").strip()
-    if not url:
-        return None
+    target = (system.get("api_url") or system.get("url") or "").strip()
+    api_key = st.session_state.api_keys.get(system.get("id"), "").strip()
+    timeout = int(st.session_state.settings["default_timeout"])
 
-    headers = {"User-Agent": "GuardianEye-Monitor/1.0"}
-    api_key = st.session_state.api_keys.get(system["id"], "")
+    if not target:
+        return {
+            "status": "Down",
+            "http_status": None,
+            "response_ms": None,
+            "message": "No monitoring URL configured.",
+        }
+
+    headers = {
+        "User-Agent": "GuardianEye-Monitor/1.0",
+        "Accept": "application/json, text/plain, */*",
+    }
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
     started = time.perf_counter()
     try:
         response = requests.get(
-            url,
+            target,
             headers=headers,
-            timeout=REQUEST_TIMEOUT_SECONDS,
+            timeout=timeout,
             allow_redirects=True,
         )
-        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
-        error = "AUTH_ERROR" if response.status_code in (401, 403) else None
+        elapsed = (time.perf_counter() - started) * 1000
+        code = response.status_code
+
+        if code in (401, 403):
+            status = "Auth Error"
+            message = f"Endpoint returned HTTP {code}."
+        elif 200 <= code < 400:
+            status = "Slow" if elapsed >= 1500 else "Healthy"
+            message = f"HTTP {code} · {elapsed:.0f} ms"
+        else:
+            status = "Down"
+            message = f"Endpoint returned HTTP {code}."
+
         return {
-            "state": classify_state(response.status_code, elapsed_ms, error),
-            "status_code": response.status_code,
-            "response_ms": elapsed_ms,
-            "error": error,
+            "status": status,
+            "http_status": code,
+            "response_ms": elapsed,
+            "message": message,
         }
-    except requests.RequestException as exc:
-        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+
+    except requests.exceptions.Timeout:
         return {
-            "state": "DOWN",
-            "status_code": None,
-            "response_ms": elapsed_ms,
-            "error": str(exc),
+            "status": "Down",
+            "http_status": None,
+            "response_ms": None,
+            "message": f"Request timeout after {timeout}s.",
+        }
+    except requests.exceptions.RequestException as exc:
+        return {
+            "status": "Down",
+            "http_status": None,
+            "response_ms": None,
+            "message": f"Connection error: {str(exc)[:140]}",
         }
 
 
-def perform_due_checks():
-    now = dt.datetime.now()
+def run_monitoring():
+    if not st.session_state.settings.get("auto_monitor", True):
+        return
+
+    interval = int(st.session_state.settings["check_interval"])
+    now = time.time()
+    if now - st.session_state.last_monitor_run < interval:
+        return
+
+    st.session_state.last_monitor_run = now
     changed = False
 
     for system in st.session_state.systems:
-        last_check = system.get("last_check")
-        due = True
-        if last_check:
-            try:
-                previous = dt.datetime.fromisoformat(last_check)
-                due = (now - previous).total_seconds() >= CHECK_INTERVAL_SECONDS
-            except ValueError:
-                due = True
-
-        if not due:
-            continue
-
         result = check_system(system)
-        if result is None:
-            continue
+        old_status = system.get("status", "Not Checked")
+        system.update(
+            {
+                "status": result["status"],
+                "http_status": result["http_status"],
+                "response_ms": result["response_ms"],
+                "last_message": result["message"],
+                "last_checked": now_string(),
+            }
+        )
 
-        old_state = system.get("last_state", "UNKNOWN")
-        new_state = result["state"]
-        system["last_state"] = new_state
-        system["status"] = STATUS_LABELS[new_state]
-        system["status_code"] = result["status_code"]
-        system["response_ms"] = result["response_ms"]
-        system["last_error"] = result["error"]
-        system["last_check"] = now.isoformat(timespec="seconds")
-        system["check_count"] = int(system.get("check_count", 0)) + 1
+        if old_status != "Not Checked" and old_status != result["status"]:
+            add_event(system, old_status, result["status"], result["message"])
         changed = True
-
-        if old_state != "UNKNOWN" and old_state != new_state:
-            append_event(
-                system.get("company", system.get("name", "Unknown")),
-                new_state,
-                f"تغيرت الحالة من {STATUS_LABELS.get(old_state, old_state)} إلى {STATUS_LABELS[new_state]}",
-            )
 
     if changed:
         save_systems(st.session_state.systems)
 
 
-perform_due_checks()
+# -----------------------------
+# Login
+# -----------------------------
 
-# =========================
-# Header
-# =========================
-st.title("GuardianEye Dashboard")
-st.caption("مراقبة دورية للحالة، زمن الاستجابة، وأحداث المنظومات")
-
-# =========================
-# Add system
-# =========================
-st.subheader("إضافة منظومة")
-with st.form("add_system_form", clear_on_submit=True):
-    company = st.text_input("اسم الشركة / المؤسسة")
-    url = st.text_input("رابط المنظومة")
-    api_url = st.text_input("رابط Health/API للفحص", placeholder="https://example.com/health")
-    api_key = st.text_input("API Key", type="password", help="لا يتم حفظ المفتاح داخل systems.json")
-    submitted = st.form_submit_button("إضافة المنظومة", use_container_width=True)
-
-    if submitted:
-        if not company.strip() or not url.strip():
-            st.error("اسم الشركة والرابط مطلوبان.")
-        else:
-            system_id = str(uuid.uuid4())
-            system = {
-                "id": system_id,
-                "company": company.strip(),
-                "url": url.strip(),
-                "api_url": api_url.strip() or url.strip(),
-                "status": STATUS_LABELS["UNKNOWN"],
-                "last_state": "UNKNOWN",
-                "status_code": None,
-                "response_ms": None,
-                "last_error": None,
-                "last_check": None,
-                "check_count": 0,
-            }
-            st.session_state.systems.append(system)
-            if api_key:
-                st.session_state.api_keys[system_id] = api_key
-            save_systems(st.session_state.systems)
-            st.success(f"تمت إضافة {company.strip()} ✅")
-            st.rerun()
-
-# =========================
-# Overview metrics
-# =========================
-all_states = [s.get("last_state", "UNKNOWN") for s in st.session_state.systems]
-healthy_count = sum(state == "HEALTHY" for state in all_states)
-down_count = sum(state == "DOWN" for state in all_states)
-auth_count = sum(state == "AUTH_ERROR" for state in all_states)
-
-m1, m2, m3, m4 = st.columns(4)
-m1.metric("المنظومات", len(st.session_state.systems))
-m2.metric("سليمة", healthy_count)
-m3.metric("متوقفة", down_count)
-m4.metric("مصادقة", auth_count)
-
-# =========================
-# Systems table
-# =========================
-st.subheader("المنظومات")
-if not st.session_state.systems:
-    st.info("لا توجد منظومات مضافة بعد.")
-else:
-    table = pd.DataFrame(
-        [
-            {
-                "المؤسسة": s.get("company", ""),
-                "الحالة": s.get("status", STATUS_LABELS["UNKNOWN"]),
-                "HTTP": s.get("status_code"),
-                "الاستجابة (ms)": s.get("response_ms"),
-                "آخر فحص": s.get("last_check", "—"),
-                "عدد الفحوص": s.get("check_count", 0),
-            }
-            for s in st.session_state.systems
-        ]
+def login():
+    st.markdown(
+        """
+        <div style="max-width:620px;margin:8vh auto 0 auto;padding:2rem;border-radius:22px;
+                    border:1px solid rgba(148,163,184,.16);background:#101722;
+                    box-shadow:0 25px 70px rgba(0,0,0,.35);">
+            <div style="font-size:3rem">🛡️</div>
+            <div class="guardian-title">GuardianEye</div>
+            <div class="guardian-subtitle">مركز مراقبة المنظومات والخدمات المصرّح لك بإدارتها</div>
+        """,
+        unsafe_allow_html=True,
     )
-    st.dataframe(table, use_container_width=True, hide_index=True)
 
-    for index, system in enumerate(st.session_state.systems):
-        name = system.get("company", f"System {index + 1}")
-        with st.expander(name):
-            st.write(f"**الرابط:** {system.get('url', '—')}")
-            st.write(f"**Endpoint:** {system.get('api_url', '—')}")
-            st.write(f"**الحالة:** {system.get('status', STATUS_LABELS['UNKNOWN'])}")
-            st.write(f"**HTTP:** {system.get('status_code', '—')}")
-            st.write(f"**زمن الاستجابة:** {system.get('response_ms', '—')} ms")
-            st.write(f"**آخر فحص:** {system.get('last_check', '—')}")
-            if system.get("last_error"):
-                st.error(f"الخطأ: {system['last_error']}")
+    username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
+    password = st.text_input(
+        "كلمة المرور",
+        type="password",
+        placeholder="أدخل كلمة المرور",
+        key="login_password",
+    )
 
-            new_key = st.text_input(
-                "تحديث API Key (اختياري)",
-                type="password",
-                key=f"api_key_{system['id']}",
+    if st.button("دخول إلى مركز المراقبة", use_container_width=True):
+        if username == ADMIN_USER and password == ADMIN_PASSWORD:
+            st.session_state.logged_in = True
+            st.rerun()
+        else:
+            st.error("بيانات الدخول غير صحيحة.")
+
+    st.markdown(
+        '<div class="small-muted" style="margin-top:1rem">الوصول محمي. لا تشارك بيانات الدخول.</div></div>',
+        unsafe_allow_html=True,
+    )
+
+
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.login_username = ""
+    st.session_state.login_password = ""
+    st.rerun()
+
+
+# -----------------------------
+# Pages
+# -----------------------------
+
+def overview_page():
+    run_monitoring()
+    systems = st.session_state.systems
+    healthy = sum(1 for s in systems if s.get("status") == "Healthy")
+    slow = sum(1 for s in systems if s.get("status") == "Slow")
+    incidents = sum(1 for s in systems if s.get("status") in ("Down", "Auth Error"))
+
+    st.markdown('<div class="guardian-title">GuardianEye</div>', unsafe_allow_html=True)
+    st.markdown('<div class="guardian-subtitle">مركز المراقبة المركزي للمنظومات والخدمات</div>', unsafe_allow_html=True)
+
+    metrics = [
+        ("المنظومات", len(systems), "إجمالي الأنظمة"),
+        ("Healthy", healthy, "استجابة طبيعية"),
+        ("Slow", slow, "زمن استجابة مرتفع"),
+        ("Incidents", incidents, "حالات تحتاج انتباه"),
+    ]
+    cols = st.columns(4)
+    for col, (label, value, note) in zip(cols, metrics):
+        with col:
+            st.markdown(
+                f'<div class="metric-card"><div class="metric-label">{label}</div>'
+                f'<div class="metric-value">{value}</div><div class="metric-note">{note}</div></div>',
+                unsafe_allow_html=True,
             )
-            c1, c2 = st.columns(2)
-            with c1:
-                if st.button("حفظ المفتاح", key=f"save_{system['id']}", use_container_width=True):
-                    if new_key:
-                        st.session_state.api_keys[system["id"]] = new_key
-                        st.success("تم تحديث المفتاح في الجلسة الحالية.")
-                    else:
-                        st.warning("أدخل مفتاحًا أولًا.")
-            with c2:
-                if st.button("حذف المنظومة", key=f"delete_{system['id']}", use_container_width=True):
-                    st.session_state.api_keys.pop(system["id"], None)
-                    st.session_state.systems.pop(index)
+
+    st.write("")
+    if not systems:
+        st.info("لا توجد منظومات بعد. استخدم «إضافة منظومة» لبدء المراقبة.")
+        return
+
+    rows = []
+    for system in systems:
+        rows.append(
+            {
+                "ID": short_id(system.get("id")),
+                "المنظومة": system.get("company", "—"),
+                "الحالة": system.get("status", "Not Checked"),
+                "HTTP": system.get("http_status") or "—",
+                "Response": response_ms_text(system.get("response_ms")),
+                "آخر فحص": system.get("last_checked") or "—",
+                "آخر نتيجة": system.get("last_message", "—"),
+            }
+        )
+
+    st.subheader("حالة المنظومات")
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+
+    st.subheader("آخر الأحداث")
+    recent = list(reversed(st.session_state.events[-8:]))
+    if not recent:
+        st.info("لا توجد أحداث مسجلة حتى الآن.")
+    else:
+        for event in recent:
+            st.markdown(
+                f'<div class="incident-row"><strong>{event["company"]}</strong>'
+                f'<span class="small-muted"> · {event["time"]}</span><br>'
+                f'{event["old_status"]} → {event["new_status"]} · {event["message"]}</div>',
+                unsafe_allow_html=True,
+            )
+
+
+def add_system_page():
+    st.header("إضافة منظومة")
+    with st.form("add_system_form", clear_on_submit=True):
+        company = st.text_input("اسم الشركة / المؤسسة")
+        url = st.text_input("الرابط الرئيسي", placeholder="https://example.com")
+        api_url = st.text_input(
+            "Endpoint المراقبة / API",
+            placeholder="https://example.com/api/health",
+        )
+        api_key = st.text_input(
+            "مفتاح API",
+            type="password",
+            help="يُستخدم أثناء الفحص ولا يُحفظ داخل systems.json أو GitHub.",
+        )
+        st.caption("🔐 المفتاح يبقى في جلسة GuardianEye الحالية ولا يُكتب في ملف الأنظمة.")
+        submitted = st.form_submit_button("إضافة المنظومة", use_container_width=True)
+
+    if not submitted:
+        return
+
+    if not company.strip() or not (url.strip() or api_url.strip()):
+        st.error("أدخل اسم المنظومة ورابطًا صالحًا للمراقبة.")
+        return
+
+    system = {
+        "id": str(uuid.uuid4()),
+        "company": company.strip(),
+        "url": url.strip(),
+        "api_url": api_url.strip(),
+        "status": "Not Checked",
+        "http_status": None,
+        "response_ms": None,
+        "last_message": "Waiting for first check.",
+        "last_checked": None,
+        "created_at": now_string(),
+    }
+
+    # Keep the API key only in Streamlit session memory.
+    # It is intentionally not part of the persisted system record.
+    st.session_state.api_keys[system["id"]] = api_key.strip()
+
+    st.session_state.systems.append(system)
+    save_systems(st.session_state.systems)
+    st.success(f"تمت إضافة {company.strip()}.")
+    st.rerun()
+
+
+def systems_page():
+    run_monitoring()
+    st.header("المنظومات")
+    if not st.session_state.systems:
+        st.info("لا توجد منظومات مسجلة.")
+        return
+
+    for system in st.session_state.systems:
+        with st.expander(f'{system.get("company", "Unknown")} · {system.get("status", "Not Checked")}'):
+            left, right = st.columns([2.2, 1])
+            with left:
+                st.markdown(status_badge(system.get("status", "Not Checked")), unsafe_allow_html=True)
+                st.write(f'**الرابط:** {system.get("url") or "—"}')
+                st.write(f'**API / Health Endpoint:** {system.get("api_url") or "—"}')
+                st.write(f'**HTTP:** {system.get("http_status") or "—"}')
+                st.write(f'**Response Time:** {response_ms_text(system.get("response_ms"))}')
+                st.write(f'**آخر فحص:** {system.get("last_checked") or "—"}')
+                st.caption(system.get("last_message", ""))
+
+            with right:
+                if st.button("فحص الآن", key=f'check_{system["id"]}', use_container_width=True):
+                    result = check_system(system)
+                    old_status = system.get("status", "Not Checked")
+                    system.update(
+                        {
+                            "status": result["status"],
+                            "http_status": result["http_status"],
+                            "response_ms": result["response_ms"],
+                            "last_message": result["message"],
+                            "last_checked": now_string(),
+                        }
+                    )
+                    if old_status != "Not Checked" and old_status != result["status"]:
+                        add_event(system, old_status, result["status"], result["message"])
                     save_systems(st.session_state.systems)
                     st.rerun()
 
-# =========================
-# Statistics
-# =========================
-st.subheader("الإحصائيات")
-if st.session_state.systems:
-    stats_df = pd.DataFrame(
-        {
-            "المؤسسة": [s.get("company", "") for s in st.session_state.systems],
-            "الحالة": [s.get("status", STATUS_LABELS["UNKNOWN"]) for s in st.session_state.systems],
-            "الاستجابة": [s.get("response_ms") or 0 for s in st.session_state.systems],
-        }
+                if st.button("حذف نهائي", key=f'delete_{system["id"]}', use_container_width=True):
+                    system_id = system["id"]
+                    deleted_name = system.get("company", "Unknown")
+
+                    # Remove from persistent systems file first.
+                    st.session_state.systems = [
+                        item for item in st.session_state.systems if item.get("id") != system_id
+                    ]
+                    save_systems(st.session_state.systems)
+
+                    # Remove the in-memory API key together with the system.
+                    st.session_state.api_keys.pop(system_id, None)
+
+                    # Also remove its related audit events permanently.
+                    st.session_state.events = [
+                        event for event in st.session_state.events if event.get("system_id") != system_id
+                    ]
+                    save_events(st.session_state.events)
+
+                    st.success(f"تم حذف {deleted_name} نهائيًا من التخزين.")
+                    st.rerun()
+
+
+def analytics_page():
+    run_monitoring()
+    st.header("التحليلات")
+    systems = st.session_state.systems
+    if not systems:
+        st.info("أضف منظومات أولًا.")
+        return
+
+    df = pd.DataFrame(
+        [
+            {
+                "company": s.get("company", "Unknown"),
+                "status": s.get("status", "Not Checked"),
+                "response_ms": s.get("response_ms"),
+            }
+            for s in systems
+        ]
     )
-    fig_status = px.pie(stats_df, names="الحالة", title="توزيع حالات المنظومات")
-    st.plotly_chart(fig_status, use_container_width=True)
 
-    fig_latency = px.bar(
-        stats_df,
-        x="المؤسسة",
-        y="الاستجابة",
-        title="زمن الاستجابة الحالي",
-        labels={"الاستجابة": "ms"},
+    col1, col2 = st.columns(2)
+    with col1:
+        counts = df["status"].value_counts().reset_index()
+        counts.columns = ["status", "count"]
+        fig = px.pie(counts, names="status", values="count", hole=.58, title="توزيع الحالات")
+        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig, use_container_width=True)
+
+    with col2:
+        r = df.dropna(subset=["response_ms"])
+        if r.empty:
+            st.info("لا توجد قياسات Response Time كافية.")
+        else:
+            fig = px.bar(r, x="company", y="response_ms", title="Response Time", labels={"response_ms": "ms", "company": ""})
+            fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+            st.plotly_chart(fig, use_container_width=True)
+
+
+def events_page():
+    st.header("سجل الأحداث")
+    events = list(reversed(st.session_state.events))
+    if not events:
+        st.info("لا توجد أحداث بعد.")
+        return
+
+    for event in events:
+        st.markdown(
+            f'<div class="incident-row"><strong>{event["company"]}</strong>'
+            f'<span class="small-muted"> · {event["time"]} · {short_id(event["id"])}</span><br>'
+            f'الحالة: {event["old_status"]} → {event["new_status"]}<br>{event["message"]}</div>',
+            unsafe_allow_html=True,
+        )
+
+
+def settings_page():
+    st.header("إعدادات المراقبة")
+    interval = st.number_input(
+        "فترة الفحص بالثواني",
+        min_value=5,
+        max_value=3600,
+        value=int(st.session_state.settings["check_interval"]),
+        step=5,
     )
-    st.plotly_chart(fig_latency, use_container_width=True)
+    timeout = st.number_input(
+        "مهلة طلب HTTP بالثواني",
+        min_value=2,
+        max_value=60,
+        value=int(st.session_state.settings["default_timeout"]),
+        step=1,
+    )
+    auto_monitor = st.checkbox(
+        "تفعيل المراقبة التلقائية",
+        value=bool(st.session_state.settings["auto_monitor"]),
+    )
 
-# =========================
-# Events
-# =========================
-st.subheader("سجل الأحداث")
-events = load_json(LOG_FILE, [])
-if events:
-    events_df = pd.DataFrame(events[::-1])
-    st.dataframe(events_df.head(100), use_container_width=True, hide_index=True)
-else:
-    st.info("لا توجد أحداث انتقال حالة حتى الآن.")
-
-st.caption("GuardianEye — يراقب فقط نقاط النهاية التي يحددها المستخدم وبصلاحية الوصول التي يملكها.")
+    if st.button("حفظ إعدادات المراقبة", use_container_width=True):
+        st.session_state.settings.update(
+            {
+                "check_interval": int(interval),
+                "default_timeout": int(timeout),
+                "auto_monitor": bool(auto_monitor),
+            }
+        )
+        _save_json(SETTINGS_FILE, st.session_state.settings)
+        st.success("تم حفظ إعدادات المراقبة.")
 
 
+# -----------------------------
+# Router
+# -----------------------------
+
+if not st.session_state.logged_in:
+    login()
+    st.stop()
+
+with st.sidebar:
+    st.markdown(
+        '<div style="font-size:1.8rem;font-weight:800">🛡️ GuardianEye</div>'
+        '<div class="small-muted">Operations Monitoring Center</div>',
+        unsafe_allow_html=True,
+    )
+    st.divider()
+
+    pages = ["Overview", "Systems", "Add System", "Analytics", "Events", "Settings"]
+    st.session_state.page = st.radio("Navigation", pages, index=pages.index(st.session_state.page))
+    st.divider()
+    st.markdown(
+        f'<div class="small-muted">Logged in as<br><strong style="color:#edf4ff">{ADMIN_USER}</strong></div>',
+        unsafe_allow_html=True,
+    )
+    if st.button("تسجيل الخروج", use_container_width=True):
+        logout()
+
+if st.session_state.page == "Overview":
+    overview_page()
+elif st.session_state.page == "Systems":
+    systems_page()
+elif st.session_state.page == "Add System":
+    add_system_page()
+elif st.session_state.page == "Analytics":
+    analytics_page()
+elif st.session_state.page == "Events":
+    events_page()
+elif st.session_state.page == "Settings":
+    settings_page()
