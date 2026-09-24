@@ -4,3 +4,6 @@ plotly
 pandas
 numpy
 flask
+requests
+supabase
+cryptography
