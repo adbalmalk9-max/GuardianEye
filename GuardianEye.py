@@ -123,20 +123,32 @@ if "logged_in" not in st.session_state:
 # =========================
 # Authentication
 # =========================
-ADMIN_USER = os.getenv("GUARDIAN_ADMIN_USER", "")
-ADMIN_PASSWORD = os.getenv("GUARDIAN_ADMIN_PASSWORD", "")
+import os
 
+ADMIN_USER = os.getenv("GUARDIAN_ADMIN_USER")
+ADMIN_PASSWORD = os.getenv("GUARDIAN_ADMIN_PASSWORD") 
 
 def login():
     st.sidebar.subheader("تسجيل الدخول")
 
     if not ADMIN_USER or not ADMIN_PASSWORD:
         st.sidebar.error("لم يتم ضبط بيانات المدير في متغيرات البيئة.")
-        st.info("اضبط GUARDIAN_ADMIN_USER و GUARDIAN_ADMIN_PASSWORD قبل تشغيل النسخة.")
+        st.info(
+            "قبل تشغيل النسخة اضبط GUARDIAN_ADMIN_USER "
+            "و GUARDIAN_ADMIN_PASSWORD"
+        )
         return
 
-    username = st.sidebar.text_input("MalkX03", key="username_field")
-    password = st.sidebar.text_input("Abdalmalk10722", type="password", key="password_field")
+    username = st.sidebar.text_input(
+        "اسم المستخدم",
+        key="username_field"
+    )
+
+    password = st.sidebar.text_input(
+        "كلمة المرور",
+        type="password",
+        key="password_field"
+    )
 
     if st.sidebar.button("دخول", use_container_width=True):
         if username == ADMIN_USER and password == ADMIN_PASSWORD:
@@ -144,7 +156,6 @@ def login():
             st.rerun()
         else:
             st.sidebar.error("بيانات الدخول غير صحيحة")
-
 
 if not st.session_state.logged_in:
     st.title("🛡️ GuardianEye")
