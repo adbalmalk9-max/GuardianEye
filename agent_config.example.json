@@ -1,0 +1,11 @@
+{
+  "supabase_url": "https://YOUR_PROJECT.supabase.co",
+  "supabase_anon_key": "YOUR_PUBLISHABLE_OR_ANON_KEY",
+  "system_id": "SYSTEM_UUID_FROM_GUARDIANEYE",
+  "ingest_token": "ONE_TIME_TOKEN_FROM_GUARDIANEYE",
+  "interval_seconds": 10,
+  "log_paths": [
+    "/var/log/auth.log",
+    "/var/log/nginx/access.log"
+  ]
+}
