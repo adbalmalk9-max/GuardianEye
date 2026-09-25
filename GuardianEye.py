@@ -1,4 +1,4 @@
-import datetime
+
 import json
 import time
 import uuid
@@ -178,6 +178,24 @@ div[data-testid="stSidebar"] hr {
     color: #d6dee8;
     font-weight: 600;
     text-align: right;
+}
+
+
+.ge-feature {
+    padding: .75rem .1rem;
+    border-top: 1px solid var(--ge-border);
+}
+.ge-feature-label {
+    color: #718096;
+    font-size: .66rem;
+    letter-spacing: .08em;
+    font-weight: 700;
+}
+.ge-feature-value {
+    color: #d6dee8;
+    font-size: .78rem;
+    font-weight: 600;
+    margin-top: .18rem;
 }
 
 div[data-testid="stTextInput"] label {
@@ -527,70 +545,84 @@ if "page" not in st.session_state:
 # ============================================================
 
 
+
 def login():
     st.markdown(
-        dedent(
-            """
-            <div class="ge-brand-bar">
-                <div class="ge-wordmark">GUARDIANEYE · OPERATIONS PLATFORM</div>
-                <div class="ge-state">
-                    <span class="ge-state-dot"></span>
-                    PRIVATE CONSOLE
-                </div>
-            </div>
-            """
-        ).strip(),
+        '<div class="ge-brand-bar">'
+        '<div class="ge-wordmark">GUARDIANEYE · OPERATIONS PLATFORM</div>'
+        '<div class="ge-state">'
+        '<span class="ge-state-dot"></span>'
+        'PRIVATE CONSOLE'
+        '</div>'
+        '</div>',
         unsafe_allow_html=True,
     )
 
-    left_col, right_col = st.columns([1.08, .92], gap="large")
+    left_col, right_col = st.columns(
+        [1.08, 0.92],
+        gap="large",
+    )
 
     with left_col:
         with st.container(border=True):
             st.markdown(
-                dedent(
-                    """
-                    <div class="ge-login-panel">
-                        <div class="ge-eyebrow">OBSERVABILITY / CONTROL</div>
-                        <div class="ge-title">Guardian<span>Eye</span></div>
-                        <div class="ge-copy">
-                            Operational visibility for authorized systems.
-                            Monitor service health, latency and incidents
-                            from one focused operations console.
-                        </div>
-
-                        <div class="ge-capabilities">
-                            <div class="ge-cap-row">
-                                <span class="ge-cap-label">SERVICE HEALTH</span>
-                                <span class="ge-cap-value">Continuous checks</span>
-                            </div>
-                            <div class="ge-cap-row">
-                                <span class="ge-cap-label">RESPONSE METRICS</span>
-                                <span class="ge-cap-value">HTTP / latency</span>
-                            </div>
-                            <div class="ge-cap-row">
-                                <span class="ge-cap-label">INCIDENT HISTORY</span>
-                                <span class="ge-cap-value">Persistent events</span>
-                            </div>
-                        </div>
-                    </div>
-                    """
-                ).strip(),
+                '<div class="ge-eyebrow">OBSERVABILITY / CONTROL</div>',
                 unsafe_allow_html=True,
             )
+
+            st.markdown(
+                '<div class="ge-title">Guardian<span>Eye</span></div>',
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                '<div class="ge-copy">'
+                'Operational visibility for authorized systems. '
+                'Monitor service health, latency and incidents '
+                'from one focused operations console.'
+                '</div>',
+                unsafe_allow_html=True,
+            )
+
+            st.write("")
+
+            feature_cols = st.columns(3)
+
+            features = [
+                ("SERVICE HEALTH", "Continuous checks"),
+                ("RESPONSE METRICS", "HTTP / latency"),
+                ("INCIDENT HISTORY", "Persistent events"),
+            ]
+
+            for column, (label, value) in zip(
+                feature_cols,
+                features,
+            ):
+                with column:
+                    st.markdown(
+                        f'<div class="ge-feature">'
+                        f'<div class="ge-feature-label">{label}</div>'
+                        f'<div class="ge-feature-value">{value}</div>'
+                        f'</div>',
+                        unsafe_allow_html=True,
+                    )
 
     with right_col:
         with st.container(border=True):
             st.markdown(
-                dedent(
-                    """
-                    <div class="ge-eyebrow">SECURE ACCESS</div>
-                    <div class="ge-form-heading">Sign in</div>
-                    <div class="ge-form-copy">
-                        Open the GuardianEye operations console.
-                    </div>
-                    """
-                ).strip(),
+                '<div class="ge-eyebrow">SECURE ACCESS</div>',
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                '<div class="ge-form-heading">Sign in</div>',
+                unsafe_allow_html=True,
+            )
+
+            st.markdown(
+                '<div class="ge-form-copy">'
+                'Open the GuardianEye operations console.'
+                '</div>',
                 unsafe_allow_html=True,
             )
 
@@ -611,25 +643,28 @@ def login():
                 "دخول إلى مركز المراقبة",
                 use_container_width=True,
             ):
-                if username == ADMIN_USER and password == ADMIN_PASSWORD:
+                if (
+                    username == ADMIN_USER
+                    and password == ADMIN_PASSWORD
+                ):
                     st.session_state.logged_in = True
-                    st.session_state.pop("login_password", None)
+                    st.session_state.pop(
+                        "login_password",
+                        None,
+                    )
                     st.rerun()
                 else:
-                    st.error("بيانات الدخول غير صحيحة.")
+                    st.error(
+                        "بيانات الدخول غير صحيحة."
+                    )
 
             st.markdown(
-                dedent(
-                    """
-                    <div class="ge-access-note">
-                        Authorized access only. GuardianEye is intended for
-                        systems and services you are authorized to monitor.
-                    </div>
-                    """
-                ).strip(),
+                '<div class="ge-access-note">'
+                'Authorized access only. GuardianEye is intended '
+                'for systems and services you are authorized to monitor.'
+                '</div>',
                 unsafe_allow_html=True,
             )
-
 def logout():
     st.session_state.logged_in = False
     st.session_state.pop("login_password", None)
