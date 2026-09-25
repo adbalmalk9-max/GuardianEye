@@ -1,4 +1,4 @@
-
+import datetime
 import json
 import time
 import uuid
@@ -56,8 +56,8 @@ body {
 
 .block-container {
     max-width: 1320px;
-    padding-top: 3.4rem;
-    padding-bottom: 3rem;
+    padding-top: 2.2rem;
+    padding-bottom: 2.2rem;
 }
 
 div[data-testid="stAppViewContainer"] {
@@ -281,6 +281,21 @@ div[data-testid="stTextInput"] input:focus {
 .incident-row {
     padding: .8rem 0;
     border-bottom: 1px solid var(--ge-border);
+}
+
+
+.ge-feature-label {
+    color: #718096;
+    font-size: .68rem;
+    letter-spacing: .09em;
+    font-weight: 700;
+}
+
+.ge-feature-value {
+    color: #d8e1ec;
+    font-size: .83rem;
+    font-weight: 650;
+    margin-top: .2rem;
 }
 
 @media (max-width: 900px) {
@@ -559,7 +574,7 @@ def login():
     )
 
     left_col, right_col = st.columns(
-        [1.08, 0.92],
+        [1.05, 0.95],
         gap="large",
     )
 
@@ -585,27 +600,38 @@ def login():
             )
 
             st.write("")
+            st.divider()
 
-            feature_cols = st.columns(3)
+            status_col, scope_col = st.columns(2)
 
-            features = [
-                ("SERVICE HEALTH", "Continuous checks"),
-                ("RESPONSE METRICS", "HTTP / latency"),
-                ("INCIDENT HISTORY", "Persistent events"),
-            ]
+            with status_col:
+                st.markdown(
+                    '<div class="ge-feature-label">PLATFORM STATUS</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    '<div class="ge-feature-value">'
+                    '<span style="color:#28c982">●</span> Operational'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
 
-            for column, (label, value) in zip(
-                feature_cols,
-                features,
-            ):
-                with column:
-                    st.markdown(
-                        f'<div class="ge-feature">'
-                        f'<div class="ge-feature-label">{label}</div>'
-                        f'<div class="ge-feature-value">{value}</div>'
-                        f'</div>',
-                        unsafe_allow_html=True,
-                    )
+            with scope_col:
+                st.markdown(
+                    '<div class="ge-feature-label">MONITORING SCOPE</div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    '<div class="ge-feature-value">'
+                    'HTTP · API · INCIDENTS'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
+
+            st.write("")
+            st.caption(
+                "Private operations console · Authorized monitoring only"
+            )
 
     with right_col:
         with st.container(border=True):
@@ -615,13 +641,13 @@ def login():
             )
 
             st.markdown(
-                '<div class="ge-form-heading">Sign in</div>',
+                '<div class="ge-form-heading">تسجيل الدخول</div>',
                 unsafe_allow_html=True,
             )
 
             st.markdown(
                 '<div class="ge-form-copy">'
-                'Open the GuardianEye operations console.'
+                'ادخل إلى وحدة التحكم الخاصة بـ GuardianEye.'
                 '</div>',
                 unsafe_allow_html=True,
             )
@@ -660,11 +686,12 @@ def login():
 
             st.markdown(
                 '<div class="ge-access-note">'
-                'Authorized access only. GuardianEye is intended '
-                'for systems and services you are authorized to monitor.'
+                'الوصول محمي. استخدم حسابًا مصرحًا به فقط.'
                 '</div>',
                 unsafe_allow_html=True,
             )
+
+
 def logout():
     st.session_state.logged_in = False
     st.session_state.pop("login_password", None)
