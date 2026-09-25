@@ -25,64 +25,289 @@ st.set_page_config(
 # Visual system
 # -----------------------------
 st.markdown(
-    """
+    r"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --bg: #090d14;
-    --panel: #101722;
-    --panel2: #151e2c;
-    --line: rgba(148,163,184,.16);
-    --text: #edf4ff;
-    --muted: #8ea0b9;
-    --accent: #35a8ff;
-    --good: #26d07c;
-    --warn: #ffb84d;
-    --bad: #ff5d6c;
+    --ge-bg: #080b10;
+    --ge-surface: #0e131a;
+    --ge-surface-2: #121922;
+    --ge-border: rgba(148,163,184,.14);
+    --ge-border-strong: rgba(148,163,184,.22);
+    --ge-text: #f4f7fb;
+    --ge-muted: #8d9aaa;
+    --ge-accent: #49a7ff;
+    --ge-accent-soft: rgba(73,167,255,.10);
+    --ge-good: #28c982;
+    --ge-warn: #f2b84b;
+    --ge-bad: #f05d67;
 }
 
-html, body, [class*="css"] { font-family: "Cairo", sans-serif; }
+html, body, [class*="css"] {
+    font-family: "Cairo", sans-serif;
+}
+
 body {
+    background: var(--ge-bg);
+    color: var(--ge-text);
+}
+
+.block-container {
+    max-width: 1320px;
+    padding-top: 3.4rem;
+    padding-bottom: 3rem;
+}
+
+div[data-testid="stAppViewContainer"] {
     background:
-        radial-gradient(circle at 15% 10%, rgba(53,168,255,.10), transparent 28%),
-        radial-gradient(circle at 85% 15%, rgba(38,208,124,.08), transparent 24%),
-        var(--bg);
-    color: var(--text);
+        radial-gradient(circle at 18% 8%, rgba(73,167,255,.055), transparent 27%),
+        linear-gradient(180deg, #080b10 0%, #0a0e14 100%);
 }
-.block-container { max-width: 1500px; padding-top: 1.5rem; }
 
-.guardian-title { font-size: 2.65rem; font-weight: 800; letter-spacing: -.03em; }
-.guardian-subtitle { color: var(--muted); margin-top: .15rem; margin-bottom: 1.6rem; }
-
-.status-pill {
-    display: inline-block; padding: .28rem .72rem; border-radius: 999px;
-    font-size: .82rem; font-weight: 700; border: 1px solid var(--line);
+div[data-testid="stSidebar"] {
+    background: #090d13;
+    border-right: 1px solid var(--ge-border);
 }
-.pill-good { background: rgba(38,208,124,.12); color: #6df0ad; }
-.pill-warn { background: rgba(255,184,77,.12); color: #ffd28a; }
-.pill-bad { background: rgba(255,93,108,.12); color: #ff98a1; }
-.pill-neutral { background: rgba(142,160,185,.10); color: #c4d0df; }
+
+div[data-testid="stSidebar"] hr {
+    border-color: var(--ge-border);
+}
+
+.ge-brand-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2.1rem;
+}
+
+.ge-wordmark {
+    font-size: .78rem;
+    letter-spacing: .16em;
+    font-weight: 700;
+    color: #b6c2d0;
+}
+
+.ge-state {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    color: #93a1b3;
+    font-size: .76rem;
+    letter-spacing: .05em;
+}
+
+.ge-state-dot {
+    width: .42rem;
+    height: .42rem;
+    border-radius: 50%;
+    background: var(--ge-good);
+    box-shadow: 0 0 0 .24rem rgba(40,201,130,.08);
+}
+
+.ge-login-shell {
+    display: grid;
+    grid-template-columns: 1.03fr .97fr;
+    min-height: 590px;
+    border: 1px solid var(--ge-border);
+    border-radius: 22px;
+    overflow: hidden;
+    background: rgba(14,19,26,.94);
+    box-shadow: 0 28px 70px rgba(0,0,0,.35);
+}
+
+.ge-login-info {
+    padding: 3.3rem 3.4rem;
+    border-right: 1px solid var(--ge-border);
+    background:
+        linear-gradient(180deg, rgba(18,25,34,.92), rgba(11,15,21,.96));
+}
+
+.ge-login-form {
+    padding: 3.3rem 3.4rem;
+    background: #0c1118;
+}
+
+.ge-eyebrow {
+    font-size: .74rem;
+    letter-spacing: .16em;
+    font-weight: 700;
+    color: #8795a7;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+}
+
+.ge-title {
+    font-size: 3.35rem;
+    line-height: 1.05;
+    letter-spacing: -.045em;
+    font-weight: 800;
+    margin: 0;
+}
+
+.ge-title span {
+    color: var(--ge-accent);
+}
+
+.ge-copy {
+    max-width: 480px;
+    margin-top: 1rem;
+    color: #9aa8b8;
+    font-size: 1rem;
+    line-height: 1.85;
+}
+
+.ge-capabilities {
+    margin-top: 3.1rem;
+    border-top: 1px solid var(--ge-border);
+    border-bottom: 1px solid var(--ge-border);
+}
+
+.ge-cap-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .95rem 0;
+    border-bottom: 1px solid var(--ge-border);
+}
+
+.ge-cap-row:last-child {
+    border-bottom: 0;
+}
+
+.ge-cap-label {
+    font-size: .78rem;
+    letter-spacing: .08em;
+    color: #728095;
+}
+
+.ge-cap-value {
+    font-size: .9rem;
+    color: #d6dee8;
+    font-weight: 600;
+}
+
+.ge-form-heading {
+    font-size: 1.8rem;
+    line-height: 1.15;
+    font-weight: 750;
+    margin: 0 0 .45rem 0;
+}
+
+.ge-form-copy {
+    color: #7f8da0;
+    font-size: .9rem;
+    margin-bottom: 1.9rem;
+}
+
+.ge-access-note {
+    margin-top: 1.5rem;
+    padding: .9rem 1rem;
+    border: 1px solid var(--ge-border);
+    border-radius: 12px;
+    background: rgba(255,255,255,.018);
+    color: #7d8a9b;
+    font-size: .78rem;
+    line-height: 1.6;
+}
+
+div[data-testid="stTextInput"] label {
+    color: #b8c4d1 !important;
+    font-size: .82rem !important;
+    font-weight: 600 !important;
+}
+
+div[data-testid="stTextInput"] input {
+    height: 48px;
+    background: #0a0f15 !important;
+    color: #eef4fb !important;
+    border: 1px solid var(--ge-border-strong) !important;
+    border-radius: 10px !important;
+}
+
+div[data-testid="stTextInput"] input:focus {
+    border-color: rgba(73,167,255,.58) !important;
+    box-shadow: 0 0 0 1px rgba(73,167,255,.16) !important;
+}
+
+.stButton > button {
+    min-height: 48px;
+    border-radius: 10px;
+    border: 1px solid rgba(73,167,255,.35);
+    background: #102033;
+    color: #edf5ff;
+    font-weight: 700;
+    transition: .18s ease;
+}
+
+.stButton > button:hover {
+    background: #15304a;
+    border-color: rgba(73,167,255,.64);
+}
+
+.small-muted {
+    color: var(--ge-muted);
+    font-size: .8rem;
+}
 
 .metric-card {
-    background: linear-gradient(180deg, rgba(21,30,44,.92), rgba(16,23,34,.92));
-    border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem;
-    min-height: 125px; box-shadow: 0 12px 32px rgba(0,0,0,.18);
+    background: linear-gradient(180deg, rgba(18,25,34,.96), rgba(14,19,26,.96));
+    border: 1px solid var(--ge-border);
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    min-height: 125px;
+    box-shadow: 0 14px 35px rgba(0,0,0,.14);
 }
-.metric-label { color: var(--muted); font-size: .86rem; margin-bottom: .45rem; }
-.metric-value { font-size: 1.85rem; font-weight: 800; }
-.metric-note { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
 
-div[data-testid="stSidebar"] { background: #0b1018; border-right: 1px solid var(--line); }
-div[data-testid="stSidebar"] hr { border-color: var(--line); }
-.stButton > button {
-    border-radius: 10px; border: 1px solid rgba(53,168,255,.22);
-    background: #111b28; color: var(--text); font-weight: 700; transition: .18s ease;
+.metric-label {
+    color: #8190a3;
+    font-size: .82rem;
 }
-.stButton > button:hover { border-color: rgba(53,168,255,.60); background: #16263a; }
-div[data-testid="stTextInput"] input { background: #0d141f; color: var(--text); border-color: var(--line); }
-.small-muted { color: var(--muted); font-size: .82rem; }
-.incident-row { padding: .75rem 0; border-bottom: 1px solid var(--line); }
+
+.metric-value {
+    color: #f2f6fb;
+    font-size: 1.85rem;
+    font-weight: 800;
+    margin-top: .3rem;
+}
+
+.metric-note {
+    color: #708096;
+    font-size: .76rem;
+    margin-top: .2rem;
+}
+
+.status-pill {
+    display: inline-block;
+    padding: .27rem .68rem;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 700;
+    border: 1px solid var(--ge-border);
+}
+
+.pill-good { background: rgba(40,201,130,.10); color: #72e5ae; }
+.pill-warn { background: rgba(242,184,75,.10); color: #f5cb7b; }
+.pill-bad { background: rgba(240,93,103,.10); color: #ff98a0; }
+.pill-neutral { background: rgba(148,163,184,.08); color: #bac5d2; }
+
+.incident-row {
+    padding: .8rem 0;
+    border-bottom: 1px solid var(--ge-border);
+}
+
+@media (max-width: 900px) {
+    .ge-login-shell {
+        grid-template-columns: 1fr;
+    }
+    .ge-login-info {
+        border-right: 0;
+        border-bottom: 1px solid var(--ge-border);
+    }
+    .block-container {
+        padding-top: 1.5rem;
+    }
+}
 </style>
 """,
     unsafe_allow_html=True,
@@ -90,6 +315,7 @@ div[data-testid="stTextInput"] input { background: #0d141f; color: var(--text); 
 
 # Refresh the interface every 5 seconds; monitoring itself is rate-limited.
 st_autorefresh(interval=5000, limit=None, key="guardian_ui_refresh")
+
 
 # -----------------------------
 # Requested admin account
@@ -104,8 +330,6 @@ ADMIN_PASSWORD = "KALIABDALMALK107"
 # Persistent database: Supabase
 # ============================================================
 
-ADMIN_USER = "MalkX03"
-ADMIN_PASSWORD = "KALIABDALMALK107"
 
 def required_secret(name):
     try:
@@ -335,42 +559,76 @@ if "page" not in st.session_state:
 
 def login():
     st.markdown(
-        "<div class='login-kicker'>GUARDIANEYE · OPERATIONS MONITORING</div>",
+        """
+        <div class="ge-brand-bar">
+            <div class="ge-wordmark">GUARDIANEYE · OPERATIONS PLATFORM</div>
+            <div class="ge-state">
+                <span class="ge-state-dot"></span>
+                PRIVATE CONSOLE
+            </div>
+        </div>
+        """,
         unsafe_allow_html=True,
     )
 
-    # Native Streamlit layout keeps the page reliable across Cloud themes.
-    left, right = st.columns([1.05, 0.95], gap="large")
+    info_col, form_col = st.columns([1.03, .97], gap="large")
 
-    with left:
-        st.markdown("## GuardianEye")
-        st.caption("Operational visibility for authorized systems.")
+    with info_col:
         st.markdown(
             """
-            <div class="login-feature-list">
-                <div><span>01</span> System health</div>
-                <div><span>02</span> Response metrics</div>
-                <div><span>03</span> Incident history</div>
+            <div class="ge-login-info">
+                <div class="ge-eyebrow">OBSERVABILITY / CONTROL</div>
+                <h1 class="ge-title">Guardian<span>Eye</span></h1>
+                <div class="ge-copy">
+                    Operational visibility for authorized systems.
+                    Monitor service health, latency and incidents
+                    from one focused operations console.
+                </div>
+
+                <div class="ge-capabilities">
+                    <div class="ge-cap-row">
+                        <span class="ge-cap-label">SERVICE HEALTH</span>
+                        <span class="ge-cap-value">Continuous checks</span>
+                    </div>
+                    <div class="ge-cap-row">
+                        <span class="ge-cap-label">RESPONSE METRICS</span>
+                        <span class="ge-cap-value">HTTP / latency</span>
+                    </div>
+                    <div class="ge-cap-row">
+                        <span class="ge-cap-label">INCIDENT HISTORY</span>
+                        <span class="ge-cap-value">Persistent events</span>
+                    </div>
+                </div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    with right:
-        st.markdown("### Secure access")
-        st.caption("Sign in to open the GuardianEye operations console.")
+    with form_col:
+        st.markdown(
+            """
+            <div class="ge-login-form">
+                <div class="ge-eyebrow">SECURE ACCESS</div>
+                <div class="ge-form-heading">Sign in</div>
+                <div class="ge-form-copy">
+                    Open the GuardianEye operations console.
+                </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
+        # Empty by default: do not expose or suggest the admin username.
         username = st.text_input(
             "اسم المستخدم",
-            placeholder="MalkX03",
             key="login_username",
+            placeholder="Enter username",
         )
 
         password = st.text_input(
             "كلمة المرور",
             type="password",
-            placeholder="أدخل كلمة المرور",
             key="login_password",
+            placeholder="Enter password",
         )
 
         if st.button(
@@ -379,12 +637,19 @@ def login():
         ):
             if username == ADMIN_USER and password == ADMIN_PASSWORD:
                 st.session_state.logged_in = True
+                st.session_state.pop("login_password", None)
                 st.rerun()
             else:
                 st.error("بيانات الدخول غير صحيحة.")
 
         st.markdown(
-            "<div class='login-footer'>Authorized access only · GuardianEye</div>",
+            """
+            <div class="ge-access-note">
+                Authorized access only. GuardianEye is intended for
+                systems and services you are authorized to monitor.
+            </div>
+            </div>
+            """,
             unsafe_allow_html=True,
         )
 
