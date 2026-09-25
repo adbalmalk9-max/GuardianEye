@@ -16,7 +16,7 @@ from streamlit_autorefresh import st_autorefresh
 
 st.set_page_config(
     page_title="GuardianEye",
-    page_icon="GE",
+    page_icon="◉",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -27,108 +27,62 @@ st.set_page_config(
 st.markdown(
     """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
 
 :root {
-    --bg: #070b11;
-    --panel: #0e141d;
-    --panel-soft: #0b1119;
-    --line: rgba(148,163,184,.14);
-    --line-strong: rgba(148,163,184,.23);
-    --text: #f4f7fb;
-    --muted: #8d9aab;
-    --accent: #4da3ff;
-    --good: #2fd27c;
-    --warn: #f2b34c;
-    --bad: #f26470;
+    --bg: #090d14;
+    --panel: #101722;
+    --panel2: #151e2c;
+    --line: rgba(148,163,184,.16);
+    --text: #edf4ff;
+    --muted: #8ea0b9;
+    --accent: #35a8ff;
+    --good: #26d07c;
+    --warn: #ffb84d;
+    --bad: #ff5d6c;
 }
 
 html, body, [class*="css"] { font-family: "Cairo", sans-serif; }
-body { background: var(--bg); color: var(--text); }
-.block-container { max-width: 1480px; padding-top: 1.2rem; padding-bottom: 2rem; }
-
-.guardian-title { font-size: 2.5rem; font-weight: 800; line-height: 1.15; letter-spacing: -.025em; }
-.guardian-subtitle { color: var(--muted); margin-top: .35rem; margin-bottom: 1.5rem; }
-
-.guardian-wordmark { display: flex; align-items: center; gap: .78rem; direction: ltr; }
-.guardian-mark {
-    width: 42px; height: 42px; display: grid; place-items: center;
-    border: 1px solid var(--line-strong); border-radius: 11px; background: var(--panel-soft);
+body {
+    background:
+        radial-gradient(circle at 15% 10%, rgba(53,168,255,.10), transparent 28%),
+        radial-gradient(circle at 85% 15%, rgba(38,208,124,.08), transparent 24%),
+        var(--bg);
+    color: var(--text);
 }
-.guardian-mark svg { width: 25px; height: 25px; }
-.wordmark-name { font-size: 1.42rem; font-weight: 800; letter-spacing: -.02em; }
-.wordmark-meta { color: var(--muted); font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; }
+.block-container { max-width: 1500px; padding-top: 1.5rem; }
+
+.guardian-title { font-size: 2.65rem; font-weight: 800; letter-spacing: -.03em; }
+.guardian-subtitle { color: var(--muted); margin-top: .15rem; margin-bottom: 1.6rem; }
 
 .status-pill {
-    display: inline-flex; align-items: center; gap: .35rem; padding: .26rem .68rem;
-    border-radius: 999px; font-size: .79rem; font-weight: 700; border: 1px solid var(--line);
+    display: inline-block; padding: .28rem .72rem; border-radius: 999px;
+    font-size: .82rem; font-weight: 700; border: 1px solid var(--line);
 }
-.pill-good { background: rgba(47,210,124,.08); color: #69e8a4; }
-.pill-warn { background: rgba(242,179,76,.08); color: #f6cc83; }
-.pill-bad { background: rgba(242,100,112,.08); color: #ff9ca4; }
-.pill-neutral { background: rgba(148,163,184,.06); color: #bec8d5; }
+.pill-good { background: rgba(38,208,124,.12); color: #6df0ad; }
+.pill-warn { background: rgba(255,184,77,.12); color: #ffd28a; }
+.pill-bad { background: rgba(255,93,108,.12); color: #ff98a1; }
+.pill-neutral { background: rgba(142,160,185,.10); color: #c4d0df; }
 
 .metric-card {
-    background: var(--panel); border: 1px solid var(--line); border-radius: 15px;
-    padding: 1rem 1.1rem; min-height: 118px;
+    background: linear-gradient(180deg, rgba(21,30,44,.92), rgba(16,23,34,.92));
+    border: 1px solid var(--line); border-radius: 16px; padding: 1rem 1.1rem;
+    min-height: 125px; box-shadow: 0 12px 32px rgba(0,0,0,.18);
 }
-.metric-label { color: var(--muted); font-size: .82rem; margin-bottom: .35rem; }
-.metric-value { font-size: 1.8rem; font-weight: 800; }
-.metric-note { color: var(--muted); font-size: .75rem; margin-top: .22rem; }
+.metric-label { color: var(--muted); font-size: .86rem; margin-bottom: .45rem; }
+.metric-value { font-size: 1.85rem; font-weight: 800; }
+.metric-note { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
 
-div[data-testid="stSidebar"] { background: #090e15; border-right: 1px solid var(--line); }
+div[data-testid="stSidebar"] { background: #0b1018; border-right: 1px solid var(--line); }
 div[data-testid="stSidebar"] hr { border-color: var(--line); }
-
 .stButton > button {
-    border-radius: 9px; border: 1px solid var(--line-strong);
-    background: #0f1722; color: var(--text); font-weight: 700; min-height: 42px;
-    transition: border-color .15s ease, background .15s ease;
+    border-radius: 10px; border: 1px solid rgba(53,168,255,.22);
+    background: #111b28; color: var(--text); font-weight: 700; transition: .18s ease;
 }
-.stButton > button:hover { border-color: rgba(77,163,255,.55); background: #121d2b; }
-
-div[data-testid="stTextInput"] input {
-    background: #0b1119; color: var(--text); border: 1px solid var(--line);
-    border-radius: 9px; min-height: 44px;
-}
-div[data-testid="stTextInput"] input:focus {
-    border-color: rgba(77,163,255,.65); box-shadow: 0 0 0 1px rgba(77,163,255,.15);
-}
-
-.small-muted { color: var(--muted); font-size: .8rem; }
-.incident-row { padding: .72rem 0; border-bottom: 1px solid var(--line); }
-
-/* Landing / login */
-.login-brand, .login-panel {
-    border: 1px solid var(--line); border-radius: 22px; box-sizing: border-box;
-    min-height: 540px;
-}
-.login-brand {
-    padding: 3rem 2.6rem; background: var(--panel-soft);
-    display: flex; flex-direction: column; justify-content: space-between;
-}
-.login-panel {
-    padding: 2.8rem 2.3rem; background: var(--panel);
-    display: flex; flex-direction: column; justify-content: center;
-}
-.login-brand-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-top: 2rem;
-}
-.login-brand-grid div {
-    border-top: 1px solid var(--line); padding-top: .7rem;
-    color: var(--muted); font-size: .74rem;
-}
-.login-label {
-    font-size: .76rem; color: var(--muted); text-transform: uppercase; letter-spacing: .11em;
-}
-.login-title { font-size: 1.95rem; font-weight: 800; margin-top: .35rem; }
-.login-copy { color: var(--muted); font-size: .88rem; line-height: 1.9; margin: .6rem 0 1.7rem; }
-.login-status { display: flex; align-items: center; gap: .45rem; margin-top: 1.3rem; color: var(--muted); font-size: .76rem; }
-.login-status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); box-shadow: 0 0 0 3px rgba(47,210,124,.08); }
-
-@media (max-width: 900px) {
-    .login-brand, .login-panel { min-height: auto; }
-    .login-brand { margin-bottom: 1rem; }
-}
+.stButton > button:hover { border-color: rgba(53,168,255,.60); background: #16263a; }
+div[data-testid="stTextInput"] input { background: #0d141f; color: var(--text); border-color: var(--line); }
+.small-muted { color: var(--muted); font-size: .82rem; }
+.incident-row { padding: .75rem 0; border-bottom: 1px solid var(--line); }
 </style>
 """,
     unsafe_allow_html=True,
@@ -380,69 +334,38 @@ if "page" not in st.session_state:
 # ============================================================
 
 def login():
-    left, right = st.columns([1.15, 0.85], gap="large")
+    st.markdown(
+        "<div class='login-kicker'>GUARDIANEYE · OPERATIONS MONITORING</div>",
+        unsafe_allow_html=True,
+    )
+
+    # Native Streamlit layout keeps the page reliable across Cloud themes.
+    left, right = st.columns([1.05, 0.95], gap="large")
 
     with left:
+        st.markdown("## GuardianEye")
+        st.caption("Operational visibility for authorized systems.")
         st.markdown(
             """
-            <div class="login-brand" dir="rtl">
-                <div>
-                    <div class="guardian-wordmark" style="direction:ltr;justify-content:flex-end">
-                        <div>
-                            <div class="wordmark-name">GuardianEye</div>
-                            <div class="wordmark-meta">OPERATIONS MONITORING CENTER</div>
-                        </div>
-                        <div class="guardian-mark" aria-hidden="true">
-                            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5 16c3.2-5 7-7.5 11-7.5S23.8 11 27 16c-3.2 5-7 7.5-11 7.5S8.2 21 5 16Z" stroke="#4DA3FF" stroke-width="1.8"/>
-                                <circle cx="16" cy="16" r="3.5" stroke="#E7EEF7" stroke-width="1.8"/>
-                                <circle cx="16" cy="16" r="1.4" fill="#4DA3FF"/>
-                            </svg>
-                        </div>
-                    </div>
-
-                    <div style="margin-top:4.8rem;max-width:620px">
-                        <div style="font-size:2.55rem;font-weight:800;line-height:1.28">
-                            رؤية تشغيلية واضحة.<br>
-                            مراقبة في مكان واحد.
-                        </div>
-                        <div style="color:#8D9AAB;font-size:.95rem;line-height:1.95;margin-top:1rem">
-                            منصة GuardianEye تجمع حالة المنظومات، زمن الاستجابة، وسجل الأحداث
-                            في مساحة تشغيلية واحدة للأنظمة المصرّح لك بمراقبتها.
-                        </div>
-                    </div>
-
-                    <div class="login-brand-grid" style="direction:rtl">
-                        <div>System Health</div>
-                        <div>Response Metrics</div>
-                        <div>Incident History</div>
-                    </div>
-                </div>
-
-                <div class="small-muted">Authorized monitoring platform · GuardianEye</div>
+            <div class="login-feature-list">
+                <div><span>01</span> System health</div>
+                <div><span>02</span> Response metrics</div>
+                <div><span>03</span> Incident history</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
     with right:
-        st.markdown(
-            """
-            <div class="login-panel" dir="rtl">
-                <div class="login-label">Secure access</div>
-                <div class="login-title">تسجيل الدخول</div>
-                <div class="login-copy">
-                    ادخل إلى مركز العمليات لمشاهدة المنظومات وإدارة عمليات المراقبة.
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown("### Secure access")
+        st.caption("Sign in to open the GuardianEye operations console.")
 
         username = st.text_input(
             "اسم المستخدم",
-            placeholder="أدخل اسم المستخدم",
+            placeholder="MalkX03",
             key="login_username",
         )
+
         password = st.text_input(
             "كلمة المرور",
             type="password",
@@ -461,21 +384,10 @@ def login():
                 st.error("بيانات الدخول غير صحيحة.")
 
         st.markdown(
-            """
-            <div class="login-status" dir="rtl">
-                <span class="login-status-dot"></span>
-                منصة المراقبة جاهزة
-            </div>
-            """,
+            "<div class='login-footer'>Authorized access only · GuardianEye</div>",
             unsafe_allow_html=True,
         )
 
-        st.markdown(
-            '<div class="small-muted" style="margin-top:2.2rem">'
-            'الوصول محمي. لا تشارك بيانات الدخول.'
-            '</div></div>',
-            unsafe_allow_html=True,
-        )
 
 def logout():
     st.session_state.logged_in = False
@@ -687,37 +599,6 @@ def overview_page():
             )
 
 
-# -----------------------------
-# UI helpers
-# -----------------------------
-
-def short_id(value):
-    return str(value)[:8] if value else "—"
-
-
-def response_ms_text(value):
-    if value is None:
-        return "—"
-    try:
-        return f"{float(value):.0f} ms"
-    except (TypeError, ValueError):
-        return "—"
-
-
-def status_badge(status):
-    mapping = {
-        "Healthy": ("pill-good", "● Healthy"),
-        "Slow": ("pill-warn", "● Slow"),
-        "Down": ("pill-bad", "● Down"),
-        "Auth Error": ("pill-bad", "● Auth Error"),
-        "Not Checked": ("pill-neutral", "● Not Checked"),
-    }
-    css, label = mapping.get(
-        status, ("pill-neutral", f"● {status}")
-    )
-    return f'<span class="status-pill {css}">{label}</span>'
-
-
 def add_system_page():
     st.header("إضافة منظومة")
 
@@ -808,7 +689,7 @@ def systems_page():
         return
 
     st.caption(
-        "الحذف النهائي يتم مباشرة من قاعدة البيانات."
+        "🛡️ الحذف النهائي يتم مباشرة من قاعدة البيانات."
     )
 
     for system in systems:
@@ -1139,21 +1020,12 @@ if not st.session_state.logged_in:
 
 with st.sidebar:
     st.markdown(
-        """
-        <div class="guardian-wordmark" style="justify-content:flex-start">
-            <div class="guardian-mark" aria-hidden="true">
-                <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 16c3.2-5 7-7.5 11-7.5S23.8 11 27 16c-3.2 5-7 7.5-11 7.5S8.2 21 5 16Z" stroke="#4DA3FF" stroke-width="1.8"/>
-                    <circle cx="16" cy="16" r="3.5" stroke="#E7EEF7" stroke-width="1.8"/>
-                    <circle cx="16" cy="16" r="1.4" fill="#4DA3FF"/>
-                </svg>
-            </div>
-            <div>
-                <div class="wordmark-name">GuardianEye</div>
-                <div class="wordmark-meta">OPERATIONS MONITORING</div>
-            </div>
-        </div>
-        """,
+        '<div style="font-size:1.8rem;font-weight:800">'
+        '◉ GuardianEye'
+        '</div>'
+        '<div class="small-muted">'
+        'Operations Monitoring Center'
+        '</div>',
         unsafe_allow_html=True,
     )
 
