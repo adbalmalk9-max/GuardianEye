@@ -320,11 +320,19 @@ st_autorefresh(interval=5000, limit=None, key="guardian_ui_refresh")
 
 
 # -----------------------------
-# Requested admin account
+# Admin account (Streamlit Secrets)
 # -----------------------------
-# For a public production deployment, move these to Streamlit Secrets/OIDC.
-ADMIN_USER = "MalkX03"
-ADMIN_PASSWORD = "KALIABDALMALK107"
+def required_login_secret(name):
+    value = str(st.secrets.get(name, "")).strip()
+    if not value:
+        raise RuntimeError(
+            f"Missing Streamlit Secret: {name}"
+        )
+    return value
+
+
+ADMIN_USER = required_login_secret("GUARDIAN_ADMIN_USER")
+ADMIN_PASSWORD = required_login_secret("GUARDIAN_ADMIN_PASSWORD")
 
 # -----------------------------
 
@@ -539,6 +547,37 @@ def run_monitoring():
             update_system(system)
         except Exception:
             pass
+
+
+# -----------------------------
+# Display helpers
+# -----------------------------
+def short_id(value):
+    return str(value)[:8] if value else "—"
+
+
+def response_ms_text(value):
+    if value is None:
+        return "—"
+    try:
+        return f"{float(value):.0f} ms"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def status_badge(status):
+    mapping = {
+        "Healthy": ("pill-good", "● Healthy"),
+        "Slow": ("pill-warn", "● Slow"),
+        "Down": ("pill-bad", "● Down"),
+        "Auth Error": ("pill-bad", "● Auth Error"),
+        "Not Checked": ("pill-neutral", "● Not Checked"),
+    }
+    css, label = mapping.get(
+        status,
+        ("pill-neutral", f"● {status}"),
+    )
+    return f'<span class="status-pill {css}">{label}</span>'
 
 
 # -----------------------------
