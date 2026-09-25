@@ -2,6 +2,7 @@ import datetime
 import json
 import time
 import uuid
+from textwrap import dedent
 from pathlib import Path
 
 import pandas as pd
@@ -105,41 +106,31 @@ div[data-testid="stSidebar"] hr {
     box-shadow: 0 0 0 .24rem rgba(40,201,130,.08);
 }
 
+
 .ge-login-shell {
-    display: grid;
-    grid-template-columns: 1.03fr .97fr;
-    min-height: 590px;
-    border: 1px solid var(--ge-border);
-    border-radius: 22px;
-    overflow: hidden;
-    background: rgba(14,19,26,.94);
-    box-shadow: 0 28px 70px rgba(0,0,0,.35);
+    min-height: 0;
 }
 
-.ge-login-info {
-    padding: 3.3rem 3.4rem;
-    border-right: 1px solid var(--ge-border);
-    background:
-        linear-gradient(180deg, rgba(18,25,34,.92), rgba(11,15,21,.96));
+.ge-brand-bar {
+    margin-bottom: 1.35rem;
 }
 
-.ge-login-form {
-    padding: 3.3rem 3.4rem;
-    background: #0c1118;
+.ge-login-panel {
+    padding: .25rem 0;
 }
 
 .ge-eyebrow {
-    font-size: .74rem;
+    font-size: .72rem;
     letter-spacing: .16em;
     font-weight: 700;
-    color: #8795a7;
+    color: #8291a3;
     text-transform: uppercase;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .ge-title {
-    font-size: 3.35rem;
-    line-height: 1.05;
+    font-size: 3.1rem;
+    line-height: 1.02;
     letter-spacing: -.045em;
     font-weight: 800;
     margin: 0;
@@ -150,15 +141,15 @@ div[data-testid="stSidebar"] hr {
 }
 
 .ge-copy {
-    max-width: 480px;
-    margin-top: 1rem;
-    color: #9aa8b8;
-    font-size: 1rem;
-    line-height: 1.85;
+    max-width: 500px;
+    margin-top: .95rem;
+    color: #97a5b6;
+    font-size: .96rem;
+    line-height: 1.8;
 }
 
 .ge-capabilities {
-    margin-top: 3.1rem;
+    margin-top: 2rem;
     border-top: 1px solid var(--ge-border);
     border-bottom: 1px solid var(--ge-border);
 }
@@ -167,7 +158,8 @@ div[data-testid="stSidebar"] hr {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: .95rem 0;
+    gap: 1rem;
+    padding: .82rem 0;
     border-bottom: 1px solid var(--ge-border);
 }
 
@@ -176,39 +168,16 @@ div[data-testid="stSidebar"] hr {
 }
 
 .ge-cap-label {
-    font-size: .78rem;
+    font-size: .72rem;
     letter-spacing: .08em;
-    color: #728095;
+    color: #718096;
 }
 
 .ge-cap-value {
-    font-size: .9rem;
+    font-size: .84rem;
     color: #d6dee8;
     font-weight: 600;
-}
-
-.ge-form-heading {
-    font-size: 1.8rem;
-    line-height: 1.15;
-    font-weight: 750;
-    margin: 0 0 .45rem 0;
-}
-
-.ge-form-copy {
-    color: #7f8da0;
-    font-size: .9rem;
-    margin-bottom: 1.9rem;
-}
-
-.ge-access-note {
-    margin-top: 1.5rem;
-    padding: .9rem 1rem;
-    border: 1px solid var(--ge-border);
-    border-radius: 12px;
-    background: rgba(255,255,255,.018);
-    color: #7d8a9b;
-    font-size: .78rem;
-    line-height: 1.6;
+    text-align: right;
 }
 
 div[data-testid="stTextInput"] label {
@@ -557,102 +526,109 @@ if "page" not in st.session_state:
 # Authentication
 # ============================================================
 
+
 def login():
     st.markdown(
-        """
-        <div class="ge-brand-bar">
-            <div class="ge-wordmark">GUARDIANEYE · OPERATIONS PLATFORM</div>
-            <div class="ge-state">
-                <span class="ge-state-dot"></span>
-                PRIVATE CONSOLE
+        dedent(
+            """
+            <div class="ge-brand-bar">
+                <div class="ge-wordmark">GUARDIANEYE · OPERATIONS PLATFORM</div>
+                <div class="ge-state">
+                    <span class="ge-state-dot"></span>
+                    PRIVATE CONSOLE
+                </div>
             </div>
-        </div>
-        """,
+            """
+        ).strip(),
         unsafe_allow_html=True,
     )
 
-    info_col, form_col = st.columns([1.03, .97], gap="large")
+    left_col, right_col = st.columns([1.08, .92], gap="large")
 
-    with info_col:
-        st.markdown(
-            """
-            <div class="ge-login-info">
-                <div class="ge-eyebrow">OBSERVABILITY / CONTROL</div>
-                <h1 class="ge-title">Guardian<span>Eye</span></h1>
-                <div class="ge-copy">
-                    Operational visibility for authorized systems.
-                    Monitor service health, latency and incidents
-                    from one focused operations console.
-                </div>
+    with left_col:
+        with st.container(border=True):
+            st.markdown(
+                dedent(
+                    """
+                    <div class="ge-login-panel">
+                        <div class="ge-eyebrow">OBSERVABILITY / CONTROL</div>
+                        <div class="ge-title">Guardian<span>Eye</span></div>
+                        <div class="ge-copy">
+                            Operational visibility for authorized systems.
+                            Monitor service health, latency and incidents
+                            from one focused operations console.
+                        </div>
 
-                <div class="ge-capabilities">
-                    <div class="ge-cap-row">
-                        <span class="ge-cap-label">SERVICE HEALTH</span>
-                        <span class="ge-cap-value">Continuous checks</span>
+                        <div class="ge-capabilities">
+                            <div class="ge-cap-row">
+                                <span class="ge-cap-label">SERVICE HEALTH</span>
+                                <span class="ge-cap-value">Continuous checks</span>
+                            </div>
+                            <div class="ge-cap-row">
+                                <span class="ge-cap-label">RESPONSE METRICS</span>
+                                <span class="ge-cap-value">HTTP / latency</span>
+                            </div>
+                            <div class="ge-cap-row">
+                                <span class="ge-cap-label">INCIDENT HISTORY</span>
+                                <span class="ge-cap-value">Persistent events</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="ge-cap-row">
-                        <span class="ge-cap-label">RESPONSE METRICS</span>
-                        <span class="ge-cap-value">HTTP / latency</span>
+                    """
+                ).strip(),
+                unsafe_allow_html=True,
+            )
+
+    with right_col:
+        with st.container(border=True):
+            st.markdown(
+                dedent(
+                    """
+                    <div class="ge-eyebrow">SECURE ACCESS</div>
+                    <div class="ge-form-heading">Sign in</div>
+                    <div class="ge-form-copy">
+                        Open the GuardianEye operations console.
                     </div>
-                    <div class="ge-cap-row">
-                        <span class="ge-cap-label">INCIDENT HISTORY</span>
-                        <span class="ge-cap-value">Persistent events</span>
+                    """
+                ).strip(),
+                unsafe_allow_html=True,
+            )
+
+            username = st.text_input(
+                "اسم المستخدم",
+                key="login_username",
+                placeholder="Enter username",
+            )
+
+            password = st.text_input(
+                "كلمة المرور",
+                type="password",
+                key="login_password",
+                placeholder="Enter password",
+            )
+
+            if st.button(
+                "دخول إلى مركز المراقبة",
+                use_container_width=True,
+            ):
+                if username == ADMIN_USER and password == ADMIN_PASSWORD:
+                    st.session_state.logged_in = True
+                    st.session_state.pop("login_password", None)
+                    st.rerun()
+                else:
+                    st.error("بيانات الدخول غير صحيحة.")
+
+            st.markdown(
+                dedent(
+                    """
+                    <div class="ge-access-note">
+                        Authorized access only. GuardianEye is intended for
+                        systems and services you are authorized to monitor.
                     </div>
-                </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-    with form_col:
-        st.markdown(
-            """
-            <div class="ge-login-form">
-                <div class="ge-eyebrow">SECURE ACCESS</div>
-                <div class="ge-form-heading">Sign in</div>
-                <div class="ge-form-copy">
-                    Open the GuardianEye operations console.
-                </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-        # Empty by default: do not expose or suggest the admin username.
-        username = st.text_input(
-            "اسم المستخدم",
-            key="login_username",
-            placeholder="Enter username",
-        )
-
-        password = st.text_input(
-            "كلمة المرور",
-            type="password",
-            key="login_password",
-            placeholder="Enter password",
-        )
-
-        if st.button(
-            "دخول إلى مركز المراقبة",
-            use_container_width=True,
-        ):
-            if username == ADMIN_USER and password == ADMIN_PASSWORD:
-                st.session_state.logged_in = True
-                st.session_state.pop("login_password", None)
-                st.rerun()
-            else:
-                st.error("بيانات الدخول غير صحيحة.")
-
-        st.markdown(
-            """
-            <div class="ge-access-note">
-                Authorized access only. GuardianEye is intended for
-                systems and services you are authorized to monitor.
-            </div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
+                    """
+                ).strip(),
+                unsafe_allow_html=True,
+            )
 
 def logout():
     st.session_state.logged_in = False
