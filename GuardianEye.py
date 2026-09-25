@@ -597,6 +597,37 @@ def overview_page():
             )
 
 
+# -----------------------------
+# UI helpers
+# -----------------------------
+
+def short_id(value):
+    return str(value)[:8] if value else "—"
+
+
+def response_ms_text(value):
+    if value is None:
+        return "—"
+    try:
+        return f"{float(value):.0f} ms"
+    except (TypeError, ValueError):
+        return "—"
+
+
+def status_badge(status):
+    mapping = {
+        "Healthy": ("pill-good", "● Healthy"),
+        "Slow": ("pill-warn", "● Slow"),
+        "Down": ("pill-bad", "● Down"),
+        "Auth Error": ("pill-bad", "● Auth Error"),
+        "Not Checked": ("pill-neutral", "● Not Checked"),
+    }
+    css, label = mapping.get(
+        status, ("pill-neutral", f"● {status}")
+    )
+    return f'<span class="status-pill {css}">{label}</span>'
+
+
 def add_system_page():
     st.header("إضافة منظومة")
 
