@@ -49,7 +49,6 @@ st.set_page_config(
     page_icon="◉",
     layout="wide",
     initial_sidebar_state="expanded",
-    menu_items={"Get Help": None, "Report a bug": None, "About": None},
 )
 
 
@@ -96,23 +95,7 @@ body{background:var(--bg);color:var(--text);}
   background:linear-gradient(180deg,#070d14,#060a10);
   border-right:1px solid var(--line);
 }
-
-[data-testid="stSidebar"]{
-  min-width:285px!important;
-  max-width:285px!important;
-}
-/* Keep the native sidebar collapse/expand control visible.
-   Streamlit has used more than one test-id across releases. */
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="collapsedControl"],
-button[aria-label*="sidebar" i],
-button[title*="sidebar" i]{
-  display:flex!important;
-  visibility:visible!important;
-  opacity:1!important;
-  pointer-events:auto!important;
-  z-index:100000!important;
-}
+[data-testid="stSidebarCollapsedControl"]{display:none!important;}
 .stButton>button{
   min-height:40px;
   border-radius:10px;
@@ -2001,7 +1984,6 @@ with st.sidebar:
     )
     st.divider()
     st.markdown('<div class="panel-note">CONTROL CENTER</div>', unsafe_allow_html=True)
-    st.caption("استخدم سهم «<<» لإخفاء الأقسام، وسيظهر «>>» لإعادتها.")
     current = st.session_state.get("page", "Overview")
     sidebar_pages = [
         ("Overview", "مركز المراقبة"),
@@ -2021,6 +2003,8 @@ with st.sidebar:
     st.markdown(f'<div class="small-muted">Signed in as<br><strong>{safe_text(ADMIN_USER)}</strong></div>', unsafe_allow_html=True)
     if st.button("تسجيل الخروج", use_container_width=True, key="logout_button"):
         logout()
+
+render_nav()
 
 try:
     page = st.session_state.page
