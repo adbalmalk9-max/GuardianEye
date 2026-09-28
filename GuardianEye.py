@@ -28,7 +28,7 @@ except Exception:
 # ================================================================
 
 APP_NAME = "GuardianEye"
-APP_VERSION = "10.0"
+APP_VERSION = "11.0"
 HEALTHY_THRESHOLD_MS = 1500
 AGENT_OFFLINE_SECONDS = 90
 INCIDENT_OPEN_WINDOW_MINUTES = 15
@@ -49,6 +49,7 @@ st.set_page_config(
     page_icon="◉",
     layout="wide",
     initial_sidebar_state="expanded",
+    menu_items={"Get Help": None, "Report a bug": None, "About": None},
 )
 
 
@@ -95,7 +96,23 @@ body{background:var(--bg);color:var(--text);}
   background:linear-gradient(180deg,#070d14,#060a10);
   border-right:1px solid var(--line);
 }
-[data-testid="stSidebarCollapsedControl"]{display:none!important;}
+
+[data-testid="stSidebar"]{
+  min-width:285px!important;
+  max-width:285px!important;
+}
+/* Keep the native sidebar collapse/expand control visible.
+   Streamlit has used more than one test-id across releases. */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="collapsedControl"],
+button[aria-label*="sidebar" i],
+button[title*="sidebar" i]{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  z-index:100000!important;
+}
 .stButton>button{
   min-height:40px;
   border-radius:10px;
@@ -314,6 +331,29 @@ hr{border-color:var(--line)!important;}
   .system-metrics{grid-template-columns:repeat(2,1fr);}
   .detail-grid{grid-template-columns:1fr;}
 }
+
+/* ================================================================
+   V11 ELITE VISUAL SYSTEM
+   ================================================================ */
+.login-command-panel{min-height:620px;padding:2.5rem 2.3rem;border:1px solid rgba(70,181,255,.14);border-radius:28px;background:linear-gradient(145deg,rgba(11,22,33,.98),rgba(5,9,14,.99));box-shadow:0 30px 90px rgba(0,0,0,.32);position:relative;overflow:hidden;}
+.login-command-panel:before{content:"";position:absolute;inset:-35% -12% auto auto;width:680px;height:680px;background:radial-gradient(circle,rgba(70,181,255,.12),transparent 62%);pointer-events:none;}
+.login-command-panel:after{content:"";position:absolute;left:-220px;bottom:-240px;width:620px;height:620px;background:radial-gradient(circle,rgba(56,224,160,.055),transparent 64%);pointer-events:none;}
+.hero-dot{color:#48b8ff;text-shadow:0 0 22px rgba(70,181,255,.75);}
+.hero-signal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.65rem;margin-top:2rem;position:relative;z-index:2;}
+.signal-item{display:flex;align-items:center;gap:.65rem;padding:.82rem .88rem;border:1px solid rgba(148,163,184,.13);border-radius:14px;background:rgba(8,14,21,.58);}
+.signal-item b{display:block;font-size:.86rem;font-weight:820;}.signal-item small{display:block;color:#738196;font-size:.68rem;margin-top:.16rem;}
+.signal-dot{width:8px;height:8px;border-radius:50%;flex:none;box-shadow:0 0 14px currentColor;}.signal-dot.green{color:#38e0a0;background:#38e0a0}.signal-dot.blue{color:#46b5ff;background:#46b5ff}.signal-dot.red{color:#ff5f73;background:#ff5f73}.signal-dot.yellow{color:#f3c76b;background:#f3c76b}
+.login-command-foot{position:absolute;left:2.3rem;right:2.3rem;bottom:1.35rem;display:flex;justify-content:space-between;gap:.6rem;color:#526277;font-size:.61rem;letter-spacing:.13em;text-transform:uppercase;border-top:1px solid rgba(148,163,184,.10);padding-top:.85rem;}
+[data-testid="stForm"]{height:100%;border:1px solid rgba(70,181,255,.18)!important;border-radius:28px!important;background:linear-gradient(180deg,#0c151f,#070c13)!important;padding:2rem 1.8rem 1.35rem!important;box-shadow:0 30px 90px rgba(0,0,0,.32)!important;}
+.login-form-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.8rem;margin-bottom:.25rem;}.login-title{font-size:2.55rem;font-weight:930;letter-spacing:-.045em;margin:.35rem 0 .35rem;line-height:1.02;}.login-note{color:#8391a4;font-size:.82rem;line-height:1.75;margin-bottom:1.4rem;}.login-form-status{display:flex;justify-content:space-between;gap:.7rem;border-top:1px solid rgba(148,163,184,.12);margin-top:1rem;padding-top:.8rem;color:#607084;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;}.status-line{display:inline-flex;align-items:center;gap:.35rem;}.status-orb{width:7px;height:7px;border-radius:50%;background:#38e0a0;box-shadow:0 0 14px rgba(56,224,160,.8);}
+.command-rail{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.68rem .82rem;border:1px solid rgba(148,163,184,.12);border-radius:16px;background:linear-gradient(180deg,#09111a,#070d14);margin-bottom:.95rem;box-shadow:0 10px 35px rgba(0,0,0,.15);}.command-rail .rail-left{display:flex;align-items:center;gap:.65rem;}.command-rail .rail-brand{font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:#6d8196;font-weight:900;}.command-rail .rail-state{display:inline-flex;align-items:center;gap:.38rem;color:#75efba;font-size:.65rem;font-weight:900;letter-spacing:.08em;text-transform:uppercase;}.command-rail .rail-state:before{content:"";width:7px;height:7px;border-radius:50%;background:#38e0a0;box-shadow:0 0 14px rgba(56,224,160,.7);}.command-rail .rail-right{color:#617185;font-size:.68rem;}
+.global-alert{position:relative;overflow:hidden;border:1px solid rgba(255,95,115,.45);background:linear-gradient(110deg,rgba(82,18,30,.68),rgba(34,10,18,.36));border-radius:18px;padding:1rem 1.15rem;margin-bottom:.85rem;box-shadow:0 14px 45px rgba(92,18,35,.18);}.global-alert:after{content:"";position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:radial-gradient(circle,rgba(255,95,115,.16),transparent 68%);}.global-alert .alert-line{display:flex;align-items:center;gap:.65rem;font-size:.8rem;font-weight:870;}.global-alert .pulse{width:10px;height:10px;border-radius:50%;background:#ff5f73;box-shadow:0 0 0 0 rgba(255,95,115,.45);animation:gePulse 1.7s infinite;}@keyframes gePulse{0%{box-shadow:0 0 0 0 rgba(255,95,115,.45)}70%{box-shadow:0 0 0 12px rgba(255,95,115,0)}100%{box-shadow:0 0 0 0 rgba(255,95,115,0)}}
+.executive-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:.8rem;margin-bottom:1rem;}.executive-panel{border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,#0a131d,#080f16);padding:1rem 1.05rem;}.executive-panel .panel-kicker{color:#64819f;font-size:.64rem;letter-spacing:.16em;text-transform:uppercase;font-weight:900;}.executive-panel .panel-title-large{font-size:1.45rem;font-weight:900;letter-spacing:-.03em;margin-top:.28rem;}.risk-meter{height:8px;border-radius:999px;background:#111a24;border:1px solid rgba(148,163,184,.10);overflow:hidden;margin-top:.65rem;}.risk-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#38e0a0,#46b5ff,#ff5f73);}.signal-table{width:100%;border-collapse:collapse;margin-top:.75rem;font-size:.75rem;}.signal-table th{color:#5e7084;font-size:.61rem;text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:.35rem .2rem;border-bottom:1px solid var(--line);}.signal-table td{padding:.55rem .2rem;border-bottom:1px solid rgba(148,163,184,.07);color:#9daabd;vertical-align:middle;}.signal-table .strong{color:#ecf3fa;font-weight:820;}
+.fleet-card{border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#0c1621,#080f17);padding:1rem 1.05rem;position:relative;overflow:hidden;margin-bottom:.7rem;}.fleet-card.attack{border-color:rgba(255,95,115,.48);box-shadow:0 0 0 1px rgba(255,95,115,.05),0 20px 55px rgba(72,10,25,.16);}.fleet-card.attack:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#ff5f73;box-shadow:0 0 20px rgba(255,95,115,.7);}.fleet-card.safe:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:#38e0a0;box-shadow:0 0 20px rgba(56,224,160,.45);}.fleet-header{display:flex;justify-content:space-between;align-items:center;gap:.8rem;}.fleet-name{font-size:1rem;font-weight:860;letter-spacing:-.018em;}.fleet-id{color:#5e7187;font-family:ui-monospace,monospace;font-size:.65rem;margin-top:.12rem;}.attack-chip{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .55rem;border:1px solid rgba(255,95,115,.36);border-radius:999px;background:rgba(255,95,115,.08);color:#ff98a6;font-size:.62rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;}.attack-chip:before{content:"";width:6px;height:6px;background:#ff5f73;border-radius:50%;box-shadow:0 0 12px rgba(255,95,115,.75);}
+.detail-shell{border:1px solid var(--line);border-radius:20px;background:linear-gradient(180deg,#0a131d,#070d14);padding:1.05rem;margin-bottom:1rem;}.detail-hero{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;}.detail-hero .title{font-size:1.6rem;font-weight:910;letter-spacing:-.035em;}.detail-hero .sub{font-size:.74rem;color:#6d7f93;margin-top:.25rem;}.timeline{position:relative;margin:.4rem 0 0;padding-left:1rem;}.timeline:before{content:"";position:absolute;left:7px;top:4px;bottom:4px;width:1px;background:linear-gradient(#46b5ff,rgba(70,181,255,0));}.timeline-item{position:relative;padding:.05rem 0 .85rem 1.15rem;}.timeline-item:before{content:"";position:absolute;left:3px;top:4px;width:9px;height:9px;border-radius:50%;background:#0b141f;border:2px solid #46b5ff;box-shadow:0 0 14px rgba(70,181,255,.35);}.timeline-item.danger:before{border-color:#ff5f73;box-shadow:0 0 14px rgba(255,95,115,.45);}.timeline-time{font-family:ui-monospace,monospace;color:#5f7389;font-size:.62rem;}.timeline-title{color:#ecf4fb;font-size:.78rem;font-weight:800;margin-top:.15rem;}.timeline-meta{color:#75879b;font-size:.68rem;line-height:1.6;margin-top:.15rem;}
+.command-tile-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem;margin-bottom:1rem;}.command-tile{border:1px solid var(--line);border-radius:16px;padding:.85rem;background:linear-gradient(145deg,#0b151f,#080f16);}.command-tile .kicker{color:#5f748c;font-size:.6rem;letter-spacing:.13em;text-transform:uppercase;font-weight:900;}.command-tile .value{font-size:1.45rem;font-weight:920;margin-top:.28rem;}.command-tile .note{color:#6e8196;font-size:.66rem;margin-top:.18rem;}.command-tile.red{border-color:rgba(255,95,115,.34);}.command-tile.green{border-color:rgba(56,224,160,.25);}
+@media (max-width:1050px){.executive-grid{grid-template-columns:1fr}.hero-signal-grid{grid-template-columns:1fr}.command-tile-grid{grid-template-columns:repeat(2,1fr)}.login-command-panel{min-height:auto}.login-command-foot{position:static;margin-top:2rem}.hero-title{font-size:3rem}}@media (max-width:720px){.command-tile-grid{grid-template-columns:1fr}.login-form-head{display:block}.secure-badge{margin-top:.65rem}.kpi-grid{grid-template-columns:repeat(2,1fr)}.page-title{font-size:2rem}}
+
 </style>
 """,
     unsafe_allow_html=True,
@@ -895,40 +935,52 @@ def login():
         st.code(f"Missing Streamlit Secret: {SECRET_BOOTSTRAP_ERROR}")
         st.stop()
 
-    st.markdown('<div class="login-shell">', unsafe_allow_html=True)
-    left, right = st.columns([1.08, .92], gap="large")
+    left, right = st.columns([1.05, .95], gap="large")
 
     with left:
         st.markdown(
-            '''<div class="login-hero">
+            '''<section class="login-command-panel">
               <div class="brand-row">
                 <div class="brand-mark">◉</div>
-                <div><div class="brand-name">GUARDIANEYE</div><div class="brand-sub">Security Operations Platform</div></div>
+                <div>
+                  <div class="brand-name">GUARDIANEYE</div>
+                  <div class="brand-sub">Security Operations Platform</div>
+                </div>
               </div>
-              <div class="eyebrow">Security Operations / Control Plane</div>
-              <div class="hero-title">مركز القيادة<br>للمراقبة الأمنية.</div>
+              <div class="eyebrow">SECURITY OPERATIONS / CONTROL PLANE</div>
+              <div class="hero-title">مركز القيادة<br>للمراقبة الأمنية<span class="hero-dot">.</span></div>
               <div class="hero-rule"></div>
-              <div class="hero-copy">رؤية مركزية للمنظومات المصرح بمراقبتها: صحة الخدمات، إشارات الحساس، الأحداث الأمنية، الحوادث، والتحليلات — في مساحة تشغيل واحدة.</div>
-              <div class="hero-metrics">
-                <div class="hero-mini"><div class="label">Architecture</div><div class="value">Agent + Control Plane</div></div>
-                <div class="hero-mini"><div class="label">Monitoring</div><div class="value">Fleet-wide visibility</div></div>
-                <div class="hero-mini"><div class="label">Security</div><div class="value">Events → Incidents</div></div>
+              <div class="hero-copy">منصة موحدة تجمع صحة الخدمات، إشارات الحساس، الأحداث الأمنية، الحوادث، والتحليلات في غرفة عمليات واحدة، مع رؤية على مستوى الأسطول بالكامل.</div>
+              <div class="hero-signal-grid">
+                <div class="signal-item"><span class="signal-dot green"></span><div><b>Global fleet view</b><small>رؤية جميع المنظومات</small></div></div>
+                <div class="signal-item"><span class="signal-dot blue"></span><div><b>Agent telemetry</b><small>Heartbeat وحالة الحساس</small></div></div>
+                <div class="signal-item"><span class="signal-dot red"></span><div><b>Incident response</b><small>أحداث → حوادث → أدلة</small></div></div>
+                <div class="signal-item"><span class="signal-dot yellow"></span><div><b>Operational health</b><small>توافر وزمن استجابة</small></div></div>
               </div>
-            </div>''',
+              <div class="login-command-foot"><span>CONTROL PLANE v11.0</span><span>AUTHORIZED ENVIRONMENT</span><span>MONITORING READY</span></div>
+            </section>''',
             unsafe_allow_html=True,
         )
 
     with right:
-        st.markdown('<div class="login-panel">', unsafe_allow_html=True)
-        st.markdown(
-            '<div class="login-panel-top"><div class="eyebrow">Identity Gateway</div><span class="secure-badge"><span class="secure-dot"></span>Secure channel</span></div>',
-            unsafe_allow_html=True,
-        )
-        st.markdown('<div class="login-title">تسجيل الدخول</div>', unsafe_allow_html=True)
-        st.markdown('<div class="login-note">الوصول مخصص للمستخدمين المخولين. بعد الدخول يتم فتح مركز القيادة ومراقبة جميع المنظومات المسجلة.</div>', unsafe_allow_html=True)
-        username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
-        password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
-        if st.button("دخول إلى مركز القيادة", use_container_width=True, key="login_submit"):
+        with st.form("guardian_login_form", clear_on_submit=False):
+            st.markdown(
+                '''<div class="login-form-head">
+                  <div><div class="eyebrow">IDENTITY GATEWAY</div><div class="login-title">تسجيل الدخول</div></div>
+                  <div class="secure-badge"><span class="secure-dot"></span>SECURE CHANNEL</div>
+                </div>
+                <div class="login-note">الوصول مخصص للمستخدمين المخولين. بعد المصادقة يفتح مركز القيادة مع الرؤية الموحدة لجميع المنظومات.</div>''',
+                unsafe_allow_html=True,
+            )
+            username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
+            password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
+            submitted = st.form_submit_button("دخول إلى مركز القيادة  →", use_container_width=True)
+            st.markdown(
+                '''<div class="login-form-status"><span class="status-line"><span class="status-orb"></span>Identity service ready</span><span>RBAC / PRIVATE</span></div>''',
+                unsafe_allow_html=True,
+            )
+
+        if submitted:
             if username == ADMIN_USER and password == ADMIN_PASSWORD:
                 st.session_state.logged_in = True
                 st.session_state.page = "Overview"
@@ -937,9 +989,6 @@ def login():
             else:
                 st.error("بيانات الدخول غير صحيحة.")
         st.caption("AUTHORIZED ACCESS ONLY · GuardianEye Control Plane")
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def logout():
@@ -953,29 +1002,8 @@ def logout():
 # ================================================================
 
 def render_nav():
-    pages = [
-        ("Overview", "مركز المراقبة"),
-        ("Fleet", "المنظومات"),
-        ("Add System", "إضافة منظومة"),
-        ("Security", "الأمن"),
-        ("Incidents", "الحوادث"),
-        ("Analytics", "التحليلات"),
-        ("Events", "الأحداث"),
-        ("Agents", "الحساسات"),
-        ("Agent Setup", "إعداد الحساس"),
-    ]
-    current = st.session_state.get("page", "Overview")
-    st.markdown('<div class="command-nav">', unsafe_allow_html=True)
-    st.markdown(
-        '<div class="nav-meta"><div class="left"><div class="title">GUARDIANEYE COMMAND CENTER</div><span class="nav-live">Live monitoring</span></div><div class="panel-note">Refresh 10s · Global fleet view</div></div>',
-        unsafe_allow_html=True,
-    )
-    cols = st.columns(len(pages))
-    for col, (key, label) in zip(cols, pages):
-        with col:
-            if navigation_button(label, key, current):
-                set_page(key)
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Sidebar is the primary navigation surface in v11.
+    return None
 
 
 # ================================================================
@@ -1132,6 +1160,7 @@ def overview_page():
 # ================================================================
 
 def fleet_page():
+    render_page_back_controls("Fleet")
     page_header("FLEET OPERATIONS", "المنظومات", "إدارة ومراقبة جميع المنظومات في واجهة تشغيل موحدة.")
     back_to_overview_button()
 
@@ -1342,6 +1371,7 @@ def render_system_detail(system, systems, security, incidents, heartbeats):
 # ================================================================
 
 def add_system_page():
+    render_page_back_controls("Add System")
     page_header("SYSTEM ONBOARDING", "إضافة منظومة", "تسجيل منظومة جديدة وإصدار هوية خاصة للحساس.")
     back_to_overview_button()
 
@@ -1402,6 +1432,7 @@ def add_system_page():
 # ================================================================
 
 def security_page():
+    render_page_back_controls("Security")
     page_header("GLOBAL SECURITY", "المراقبة الأمنية", "Global Security Feed لجميع المنظومات، مع تنبيهات وارتباطات متعددة المنظومات.")
     back_to_overview_button()
 
@@ -1506,6 +1537,7 @@ def security_page():
 # ================================================================
 
 def incidents_page():
+    render_page_back_controls("Incidents")
     page_header("INCIDENT RESPONSE", "الحوادث الأمنية", "تحويل الأحداث إلى حوادث قابلة للتحليل والمتابعة والإغلاق والتصدير.")
     back_to_overview_button()
 
@@ -1674,6 +1706,7 @@ def build_incident_report(incident, system, events):
 # ================================================================
 
 def analytics_page():
+    render_page_back_controls("Analytics")
     page_header("SECURITY ANALYTICS", "التحليلات", "لوحة تحليلية تربط صحة الخدمات بالحوادث والأحداث ومصادرها.")
     back_to_overview_button()
 
@@ -1751,6 +1784,7 @@ def analytics_page():
 # ================================================================
 
 def events_page():
+    render_page_back_controls("Events")
     page_header("EVENT EXPLORER", "سجل الأحداث", "استكشاف تشغيلي وأمني مع تصفية وتصدير.")
     back_to_overview_button()
 
@@ -1811,6 +1845,7 @@ def events_page():
 # ================================================================
 
 def agents_page():
+    render_page_back_controls("Agents")
     page_header("AGENT FLEET", "الحساسات", "حالة أسطول GuardianEye Agent، heartbeat، إصدار البرنامج، وقياسات التشغيل.")
     back_to_overview_button()
 
@@ -1877,6 +1912,7 @@ def agents_page():
 # ================================================================
 
 def agent_setup_page():
+    render_page_back_controls("Agent Setup")
     page_header("AGENT CONTROL", "إعداد الحساس", "متابعة حالة الحساسات وتعليمات الربط لكل منظومة.")
     back_to_overview_button()
 
@@ -1956,6 +1992,2222 @@ def systems_page():
     # Backward-compatible entry point for the previous page name.
     return fleet_page()
 
+
+# ================================================================
+# GuardianEye v11 architecture catalog
+# ================================================================
+V11_CAPABILITY_CATALOG = [
+    {
+        "id": "CAP-001",
+        "area": "Fleet",
+        "name": "fleet visibility module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-002",
+        "area": "Fleet",
+        "name": "fleet visibility module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-003",
+        "area": "Fleet",
+        "name": "fleet visibility module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-004",
+        "area": "Fleet",
+        "name": "fleet visibility module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-005",
+        "area": "Fleet",
+        "name": "fleet visibility module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-006",
+        "area": "Fleet",
+        "name": "fleet visibility module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-007",
+        "area": "Fleet",
+        "name": "fleet visibility module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-008",
+        "area": "Fleet",
+        "name": "fleet visibility module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports fleet visibility through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-009",
+        "area": "Security",
+        "name": "security telemetry module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-010",
+        "area": "Security",
+        "name": "security telemetry module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-011",
+        "area": "Security",
+        "name": "security telemetry module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-012",
+        "area": "Security",
+        "name": "security telemetry module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-013",
+        "area": "Security",
+        "name": "security telemetry module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-014",
+        "area": "Security",
+        "name": "security telemetry module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-015",
+        "area": "Security",
+        "name": "security telemetry module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-016",
+        "area": "Security",
+        "name": "security telemetry module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports security telemetry through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-017",
+        "area": "Incidents",
+        "name": "incident response module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-018",
+        "area": "Incidents",
+        "name": "incident response module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-019",
+        "area": "Incidents",
+        "name": "incident response module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-020",
+        "area": "Incidents",
+        "name": "incident response module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-021",
+        "area": "Incidents",
+        "name": "incident response module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-022",
+        "area": "Incidents",
+        "name": "incident response module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-023",
+        "area": "Incidents",
+        "name": "incident response module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-024",
+        "area": "Incidents",
+        "name": "incident response module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports incident response through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-025",
+        "area": "Agents",
+        "name": "agent health module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-026",
+        "area": "Agents",
+        "name": "agent health module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-027",
+        "area": "Agents",
+        "name": "agent health module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-028",
+        "area": "Agents",
+        "name": "agent health module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-029",
+        "area": "Agents",
+        "name": "agent health module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-030",
+        "area": "Agents",
+        "name": "agent health module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-031",
+        "area": "Agents",
+        "name": "agent health module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-032",
+        "area": "Agents",
+        "name": "agent health module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports agent health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-033",
+        "area": "Operations",
+        "name": "service health module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-034",
+        "area": "Operations",
+        "name": "service health module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-035",
+        "area": "Operations",
+        "name": "service health module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-036",
+        "area": "Operations",
+        "name": "service health module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-037",
+        "area": "Operations",
+        "name": "service health module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-038",
+        "area": "Operations",
+        "name": "service health module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-039",
+        "area": "Operations",
+        "name": "service health module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-040",
+        "area": "Operations",
+        "name": "service health module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports service health through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-041",
+        "area": "Analytics",
+        "name": "analytics module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-042",
+        "area": "Analytics",
+        "name": "analytics module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-043",
+        "area": "Analytics",
+        "name": "analytics module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-044",
+        "area": "Analytics",
+        "name": "analytics module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-045",
+        "area": "Analytics",
+        "name": "analytics module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-046",
+        "area": "Analytics",
+        "name": "analytics module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-047",
+        "area": "Analytics",
+        "name": "analytics module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-048",
+        "area": "Analytics",
+        "name": "analytics module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports analytics through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-049",
+        "area": "Events",
+        "name": "event audit module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-050",
+        "area": "Events",
+        "name": "event audit module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-051",
+        "area": "Events",
+        "name": "event audit module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-052",
+        "area": "Events",
+        "name": "event audit module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-053",
+        "area": "Events",
+        "name": "event audit module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-054",
+        "area": "Events",
+        "name": "event audit module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-055",
+        "area": "Events",
+        "name": "event audit module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-056",
+        "area": "Events",
+        "name": "event audit module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports event audit through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-057",
+        "area": "Reports",
+        "name": "reporting module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-058",
+        "area": "Reports",
+        "name": "reporting module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-059",
+        "area": "Reports",
+        "name": "reporting module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-060",
+        "area": "Reports",
+        "name": "reporting module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-061",
+        "area": "Reports",
+        "name": "reporting module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-062",
+        "area": "Reports",
+        "name": "reporting module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-063",
+        "area": "Reports",
+        "name": "reporting module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-064",
+        "area": "Reports",
+        "name": "reporting module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports reporting through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-065",
+        "area": "Threat Hunt",
+        "name": "investigation module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-066",
+        "area": "Threat Hunt",
+        "name": "investigation module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-067",
+        "area": "Threat Hunt",
+        "name": "investigation module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-068",
+        "area": "Threat Hunt",
+        "name": "investigation module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-069",
+        "area": "Threat Hunt",
+        "name": "investigation module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-070",
+        "area": "Threat Hunt",
+        "name": "investigation module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-071",
+        "area": "Threat Hunt",
+        "name": "investigation module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-072",
+        "area": "Threat Hunt",
+        "name": "investigation module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports investigation through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-073",
+        "area": "Access",
+        "name": "operator access module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-074",
+        "area": "Access",
+        "name": "operator access module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-075",
+        "area": "Access",
+        "name": "operator access module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-076",
+        "area": "Access",
+        "name": "operator access module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-077",
+        "area": "Access",
+        "name": "operator access module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-078",
+        "area": "Access",
+        "name": "operator access module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-079",
+        "area": "Access",
+        "name": "operator access module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-080",
+        "area": "Access",
+        "name": "operator access module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports operator access through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-081",
+        "area": "Platform",
+        "name": "control plane module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-082",
+        "area": "Platform",
+        "name": "control plane module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-083",
+        "area": "Platform",
+        "name": "control plane module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-084",
+        "area": "Platform",
+        "name": "control plane module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-085",
+        "area": "Platform",
+        "name": "control plane module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-086",
+        "area": "Platform",
+        "name": "control plane module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-087",
+        "area": "Platform",
+        "name": "control plane module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-088",
+        "area": "Platform",
+        "name": "control plane module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports control plane through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-089",
+        "area": "Resilience",
+        "name": "resilience module 01",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-090",
+        "area": "Resilience",
+        "name": "resilience module 02",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-091",
+        "area": "Resilience",
+        "name": "resilience module 03",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-092",
+        "area": "Resilience",
+        "name": "resilience module 04",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-093",
+        "area": "Resilience",
+        "name": "resilience module 05",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-094",
+        "area": "Resilience",
+        "name": "resilience module 06",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-095",
+        "area": "Resilience",
+        "name": "resilience module 07",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+    {
+        "id": "CAP-096",
+        "area": "Resilience",
+        "name": "resilience module 08",
+        "state": "ACTIVE",
+        "description": "GuardianEye supports resilience through a centralized operator workflow.",
+        "source": "Control Plane",
+    },
+]
+
+V11_DETECTION_RULE_CATALOG = [
+    {
+        "id": "RULE-001",
+        "name": "Brute Force",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-002",
+        "name": "Windows Brute Force",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-003",
+        "name": "Kerberos Authentication Failure",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-004",
+        "name": "Security Log Cleared",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-005",
+        "name": "SQL Injection Pattern",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-006",
+        "name": "Path Traversal",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-007",
+        "name": "Command Injection Pattern",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-008",
+        "name": "Web Scanner Activity",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-009",
+        "name": "HTTP Flood / High Rate",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-010",
+        "name": "Port Scan Observed",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-011",
+        "name": "Brute Force profile 2",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-012",
+        "name": "Windows Brute Force profile 2",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-013",
+        "name": "Kerberos Authentication Failure profile 2",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-014",
+        "name": "Security Log Cleared profile 2",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-015",
+        "name": "SQL Injection Pattern profile 2",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-016",
+        "name": "Path Traversal profile 2",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-017",
+        "name": "Command Injection Pattern profile 2",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-018",
+        "name": "Web Scanner Activity profile 2",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-019",
+        "name": "HTTP Flood / High Rate profile 2",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-020",
+        "name": "Port Scan Observed profile 2",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-021",
+        "name": "Brute Force profile 3",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-022",
+        "name": "Windows Brute Force profile 3",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-023",
+        "name": "Kerberos Authentication Failure profile 3",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-024",
+        "name": "Security Log Cleared profile 3",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-025",
+        "name": "SQL Injection Pattern profile 3",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-026",
+        "name": "Path Traversal profile 3",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-027",
+        "name": "Command Injection Pattern profile 3",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-028",
+        "name": "Web Scanner Activity profile 3",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-029",
+        "name": "HTTP Flood / High Rate profile 3",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-030",
+        "name": "Port Scan Observed profile 3",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-031",
+        "name": "Brute Force profile 4",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-032",
+        "name": "Windows Brute Force profile 4",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-033",
+        "name": "Kerberos Authentication Failure profile 4",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-034",
+        "name": "Security Log Cleared profile 4",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-035",
+        "name": "SQL Injection Pattern profile 4",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-036",
+        "name": "Path Traversal profile 4",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-037",
+        "name": "Command Injection Pattern profile 4",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-038",
+        "name": "Web Scanner Activity profile 4",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-039",
+        "name": "HTTP Flood / High Rate profile 4",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-040",
+        "name": "Port Scan Observed profile 4",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-041",
+        "name": "Brute Force profile 5",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-042",
+        "name": "Windows Brute Force profile 5",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-043",
+        "name": "Kerberos Authentication Failure profile 5",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-044",
+        "name": "Security Log Cleared profile 5",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-045",
+        "name": "SQL Injection Pattern profile 5",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-046",
+        "name": "Path Traversal profile 5",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-047",
+        "name": "Command Injection Pattern profile 5",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-048",
+        "name": "Web Scanner Activity profile 5",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-049",
+        "name": "HTTP Flood / High Rate profile 5",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-050",
+        "name": "Port Scan Observed profile 5",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-051",
+        "name": "Brute Force profile 6",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-052",
+        "name": "Windows Brute Force profile 6",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-053",
+        "name": "Kerberos Authentication Failure profile 6",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-054",
+        "name": "Security Log Cleared profile 6",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-055",
+        "name": "SQL Injection Pattern profile 6",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-056",
+        "name": "Path Traversal profile 6",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-057",
+        "name": "Command Injection Pattern profile 6",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-058",
+        "name": "Web Scanner Activity profile 6",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-059",
+        "name": "HTTP Flood / High Rate profile 6",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-060",
+        "name": "Port Scan Observed profile 6",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-061",
+        "name": "Brute Force profile 7",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-062",
+        "name": "Windows Brute Force profile 7",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-063",
+        "name": "Kerberos Authentication Failure profile 7",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-064",
+        "name": "Security Log Cleared profile 7",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-065",
+        "name": "SQL Injection Pattern profile 7",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-066",
+        "name": "Path Traversal profile 7",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-067",
+        "name": "Command Injection Pattern profile 7",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-068",
+        "name": "Web Scanner Activity profile 7",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-069",
+        "name": "HTTP Flood / High Rate profile 7",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-070",
+        "name": "Port Scan Observed profile 7",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-071",
+        "name": "Brute Force profile 8",
+        "severity": "High",
+        "description": "Repeated authentication failures in a sliding time window.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-072",
+        "name": "Windows Brute Force profile 8",
+        "severity": "High",
+        "description": "Repeated Windows failed logons from a source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-073",
+        "name": "Kerberos Authentication Failure profile 8",
+        "severity": "Medium",
+        "description": "Windows Kerberos pre-authentication failure.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-074",
+        "name": "Security Log Cleared profile 8",
+        "severity": "High",
+        "description": "Security event log cleared.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-075",
+        "name": "SQL Injection Pattern profile 8",
+        "severity": "High",
+        "description": "SQL injection style request pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-076",
+        "name": "Path Traversal profile 8",
+        "severity": "High",
+        "description": "Traversal sequence in a web request.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-077",
+        "name": "Command Injection Pattern profile 8",
+        "severity": "High",
+        "description": "Command injection style pattern.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-078",
+        "name": "Web Scanner Activity profile 8",
+        "severity": "Medium",
+        "description": "Scanner-like activity observed.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-079",
+        "name": "HTTP Flood / High Rate profile 8",
+        "severity": "Medium",
+        "description": "High request rate from one source.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+    {
+        "id": "RULE-080",
+        "name": "Port Scan Observed profile 8",
+        "severity": "Medium",
+        "description": "Remote source reaches many local ports.",
+        "mode": "DETECTION",
+        "source": "Agent telemetry",
+    },
+]
+
+V11_OPERATIONS_RUNBOOK = [
+    {
+        "step": 1,
+        "title": "Verify control plane secrets",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 2,
+        "title": "Review fleet posture",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 3,
+        "title": "Inspect high severity events",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 4,
+        "title": "Open incident workspace",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 5,
+        "title": "Check agent heartbeat",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 6,
+        "title": "Review service latency",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 7,
+        "title": "Correlate sources",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 8,
+        "title": "Export evidence",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 9,
+        "title": "Validate agent setup",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 10,
+        "title": "Run presentation demo",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 11,
+        "title": "Verify control plane secrets checkpoint 2",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 12,
+        "title": "Review fleet posture checkpoint 2",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 13,
+        "title": "Inspect high severity events checkpoint 2",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 14,
+        "title": "Open incident workspace checkpoint 2",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 15,
+        "title": "Check agent heartbeat checkpoint 2",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 16,
+        "title": "Review service latency checkpoint 2",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 17,
+        "title": "Correlate sources checkpoint 2",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 18,
+        "title": "Export evidence checkpoint 2",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 19,
+        "title": "Validate agent setup checkpoint 2",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 20,
+        "title": "Run presentation demo checkpoint 2",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 21,
+        "title": "Verify control plane secrets checkpoint 3",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 22,
+        "title": "Review fleet posture checkpoint 3",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 23,
+        "title": "Inspect high severity events checkpoint 3",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 24,
+        "title": "Open incident workspace checkpoint 3",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 25,
+        "title": "Check agent heartbeat checkpoint 3",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 26,
+        "title": "Review service latency checkpoint 3",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 27,
+        "title": "Correlate sources checkpoint 3",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 28,
+        "title": "Export evidence checkpoint 3",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 29,
+        "title": "Validate agent setup checkpoint 3",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 30,
+        "title": "Run presentation demo checkpoint 3",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 31,
+        "title": "Verify control plane secrets checkpoint 4",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 32,
+        "title": "Review fleet posture checkpoint 4",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 33,
+        "title": "Inspect high severity events checkpoint 4",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 34,
+        "title": "Open incident workspace checkpoint 4",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 35,
+        "title": "Check agent heartbeat checkpoint 4",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 36,
+        "title": "Review service latency checkpoint 4",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 37,
+        "title": "Correlate sources checkpoint 4",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 38,
+        "title": "Export evidence checkpoint 4",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 39,
+        "title": "Validate agent setup checkpoint 4",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 40,
+        "title": "Run presentation demo checkpoint 4",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 41,
+        "title": "Verify control plane secrets checkpoint 5",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 42,
+        "title": "Review fleet posture checkpoint 5",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 43,
+        "title": "Inspect high severity events checkpoint 5",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 44,
+        "title": "Open incident workspace checkpoint 5",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 45,
+        "title": "Check agent heartbeat checkpoint 5",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 46,
+        "title": "Review service latency checkpoint 5",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 47,
+        "title": "Correlate sources checkpoint 5",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 48,
+        "title": "Export evidence checkpoint 5",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 49,
+        "title": "Validate agent setup checkpoint 5",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 50,
+        "title": "Run presentation demo checkpoint 5",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 51,
+        "title": "Verify control plane secrets checkpoint 6",
+        "operator_note": "Confirm required Streamlit secrets exist without exposing their values.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 52,
+        "title": "Review fleet posture checkpoint 6",
+        "operator_note": "Confirm system count, service health and agent availability.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 53,
+        "title": "Inspect high severity events checkpoint 6",
+        "operator_note": "Open Security and verify source, timestamp and evidence.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 54,
+        "title": "Open incident workspace checkpoint 6",
+        "operator_note": "Review the incident timeline and related events.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 55,
+        "title": "Check agent heartbeat checkpoint 6",
+        "operator_note": "Confirm recent heartbeat for every production agent.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 56,
+        "title": "Review service latency checkpoint 6",
+        "operator_note": "Check for Slow, Down or Auth Error states.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 57,
+        "title": "Correlate sources checkpoint 6",
+        "operator_note": "Look for the same source across multiple systems.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 58,
+        "title": "Export evidence checkpoint 6",
+        "operator_note": "Generate the appropriate CSV or incident report.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 59,
+        "title": "Validate agent setup checkpoint 6",
+        "operator_note": "Verify System ID and token delivery securely.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+    {
+        "step": 60,
+        "title": "Run presentation demo checkpoint 6",
+        "operator_note": "Use the built-in demo signal rather than a real attack.",
+        "owner": "SOC operator",
+        "priority": "STANDARD",
+    },
+]
+
+def v11_capability_dataframe():
+    return pd.DataFrame(V11_CAPABILITY_CATALOG)
+
+def v11_rule_dataframe():
+    return pd.DataFrame(V11_DETECTION_RULE_CATALOG)
+
+def v11_runbook_dataframe():
+    return pd.DataFrame(V11_OPERATIONS_RUNBOOK)
+
+def get_latest_security_event(events, system_id):
+    return next((event for event in events if event.get("system_id") == system_id), None)
+
+def latest_heartbeat_by_system(heartbeats):
+    result = {}
+    for row in heartbeats:
+        sid = row.get("system_id")
+        if sid and sid not in result:
+            result[sid] = row
+    return result
+
+def build_security_export(events, systems):
+    mapping = {s.get("id"): s.get("company", "Unknown") for s in systems}
+    return pd.DataFrame([
+        {"time": e.get("event_time"), "system": mapping.get(e.get("system_id"), short_id(e.get("system_id"))), "attack_type": e.get("attack_type") or e.get("event_type"), "severity": e.get("severity"), "confidence": e.get("confidence"), "source_ip": e.get("source_ip"), "source_port": e.get("source_port"), "dest_port": e.get("dest_port"), "protocol": e.get("protocol"), "status": e.get("status"), "detected_by": e.get("detected_by"), "evidence": e.get("evidence")} for e in events
+    ])
+
+def build_incident_export(incidents, systems):
+    mapping = {s.get("id"): s.get("company", "Unknown") for s in systems}
+    return pd.DataFrame([
+        {"id": i.get("id"), "system": mapping.get(i.get("system_id"), short_id(i.get("system_id"))), "title": i.get("title"), "attack_type": i.get("attack_type"), "severity": i.get("severity"), "source_ip": i.get("source_ip"), "first_seen": i.get("first_seen"), "last_seen": i.get("last_seen"), "event_count": i.get("event_count"), "status": i.get("status")} for i in incidents
+    ])
+
+def render_global_event_feed(events, systems, limit=25):
+    mapping = {s.get("id"): s.get("company", "Unknown") for s in systems}
+    if not events:
+        st.info("لا توجد أحداث أمنية.")
+        return
+    rows = []
+    for event in events[:limit]:
+        sev = event.get("severity") or "Info"
+        dot = "danger" if SEVERITY_WEIGHT.get(sev, 0) >= 7 else ("warn" if sev == "Medium" else "")
+        company = mapping.get(event.get("system_id"), short_id(event.get("system_id")))
+        rows.append(f'<div class="feed-row"><span class="feed-dot {dot}"></span><div><div class="feed-title">{safe_text(event.get("attack_type") or event.get("event_type") or "Security Event")}</div><div class="feed-meta">{safe_text(company)} · {safe_text(event.get("source_ip") or "Unknown")} · {safe_text(age_text(event.get("event_time")))}</div></div>{severity_badge(sev)}</div>')
+    st.markdown("".join(rows), unsafe_allow_html=True)
+
+def render_empty_state(title, message, action_label=None, action_page=None):
+    st.markdown(f'<div class="panel" style="text-align:center;padding:2rem"><div class="eyebrow">NO DATA</div><div style="font-size:1.1rem;font-weight:850;margin-top:.4rem">{safe_text(title)}</div><div class="small-muted" style="margin-top:.35rem">{safe_text(message)}</div></div>', unsafe_allow_html=True)
+    if action_label and action_page:
+        if st.button(action_label, use_container_width=True):
+            set_page(action_page)
+
+def render_latency_chart(systems):
+    rows = [s for s in systems if s.get("response_ms") is not None]
+    if not rows:
+        st.info("لا توجد قياسات استجابة حتى الآن.")
+        return
+    frame = pd.DataFrame([{"system": s.get("company", "Unknown"), "response_ms": safe_float(s.get("response_ms"), 0)} for s in rows])
+    fig = px.bar(frame, x="system", y="response_ms", title="زمن الاستجابة الحالي")
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    st.plotly_chart(fig, use_container_width=True)
+
+def render_risk_distribution(systems, incidents, events):
+    rows = [(s.get("company", "Unknown"), v11_system_risk(s, incidents, events) if "v11_system_risk" in globals() else min(100, status_weight(s.get("status"))*6)) for s in systems]
+    if not rows:
+        st.info("لا توجد منظومات.")
+        return
+    frame = pd.DataFrame(rows, columns=["system", "risk"]).sort_values("risk", ascending=True)
+    fig = px.bar(frame, x="risk", y="system", orientation="h", range_x=[0,100], title="مؤشر المخاطر حسب المنظومة")
+    fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+    st.plotly_chart(fig, use_container_width=True)
+
+def render_agent_health_matrix(systems, heartbeats):
+    hb=latest_heartbeat_by_system(heartbeats)
+    rows=[]
+    for s in systems:
+        h=hb.get(s.get("id"),{})
+        rows.append({"المنظومة":s.get("company","Unknown"),"Agent":"Online" if agent_is_online(s) else "Offline","OS":h.get("os_name","—"),"CPU":h.get("cpu_percent"),"Memory":h.get("memory_percent"),"Last heartbeat":age_text(s.get("agent_last_seen"))})
+    if rows: st.dataframe(pd.DataFrame(rows),use_container_width=True,hide_index=True)
+    else: st.info("لا توجد حساسات بعد.")
+
+def render_notification_center(events, incidents, systems):
+    by_id={s.get("id"):s for s in systems}
+    items=[]
+    for e in events:
+        if SEVERITY_WEIGHT.get(str(e.get("severity") or "Info"),0)>=7:
+            items.append(("Event",e,by_id.get(e.get("system_id"),{}).get("company","Unknown")))
+    for i in incidents:
+        if i.get("status")=="Open" and SEVERITY_WEIGHT.get(str(i.get("severity") or "Info"),0)>=7:
+            items.append(("Incident",i,by_id.get(i.get("system_id"),{}).get("company","Unknown")))
+    if not items:
+        render_empty_state("لا توجد تنبيهات غير معالَجة","ستظهر High/Critical هنا عند وصولها.")
+        return
+    for kind,item,company in items[:40]:
+        sev=item.get("severity") or "High"
+        text_value=item.get("evidence") or item.get("evidence_summary") or item.get("title") or ""
+        st.markdown(f'<div class="incident-card"><strong>{safe_text(kind)} · {safe_text(company)}</strong> {severity_badge(sev)}<div class="small-muted" style="margin-top:.35rem">{safe_text(text_value[:700])}</div></div>',unsafe_allow_html=True)
+
+def render_page_back_controls(page):
+    if page == "Overview":
+        return
+    if st.button("← مركز المراقبة", key=f"v11_back_{page}"):
+        set_page("Overview")
+
+def render_nav_breadcrumb(page):
+    title=V11_PAGE_TITLES.get(page,page)
+    st.markdown(f'<div class="eyebrow">GUARDIANEYE / CONTROL PLANE</div><div class="page-title">{safe_text(title)}</div><div class="page-subtitle">إدارة وتشغيل هذه الوحدة ضمن مركز GuardianEye.</div>',unsafe_allow_html=True)
+
+def v11_render_catalogs():
+    st.markdown("### Capability catalog")
+    st.dataframe(v11_capability_dataframe(),use_container_width=True,hide_index=True)
+    st.markdown("### Detection catalog")
+    st.dataframe(v11_rule_dataframe(),use_container_width=True,hide_index=True)
+    st.markdown("### Operations runbook")
+    st.dataframe(v11_runbook_dataframe(),use_container_width=True,hide_index=True)
+
+# ================================================================
+# V11 global intelligence, reporting and command components
+# ================================================================
+
+SEVERITY_WEIGHT = {"Info": 0, "Low": 1, "Medium": 3, "High": 7, "Critical": 10}
+STATUS_WEIGHT = {"Healthy": 0, "Slow": 2, "Not Checked": 3, "Auth Error": 5, "Down": 7}
+V11_PAGES = [
+    ("Overview", "مركز المراقبة"), ("Fleet", "المنظومات"), ("Add System", "إضافة منظومة"),
+    ("Security", "الأمن"), ("Incidents", "الحوادث"), ("Analytics", "التحليلات"),
+    ("Events", "الأحداث"), ("Agents", "الحساسات"), ("Agent Setup", "إعداد الحساس"),
+    ("Threat Hunt", "Threat Hunt"), ("Operations", "العمليات"), ("Reports", "التقارير"),
+    ("Notifications", "التنبيهات"), ("Settings", "الإعدادات"),
+]
+V11_PAGE_TITLES = {k: v for k, v in V11_PAGES}
+
+
+def v11_format_number(value):
+    try:
+        return f"{int(value):,}"
+    except Exception:
+        return str(value)
+
+
+def v11_severity_weight(value):
+    return SEVERITY_WEIGHT.get(str(value or "Info"), 0)
+
+
+def v11_status_weight(value):
+    return STATUS_WEIGHT.get(str(value or "Not Checked"), 3)
+
+
+def v11_system_risk(system, incidents, events):
+    sid = system.get("id")
+    score = v11_status_weight(system.get("status")) * 6
+    score += sum(v11_severity_weight(i.get("severity")) * 5 for i in incidents if i.get("system_id") == sid and i.get("status") == "Open")
+    score += sum(v11_severity_weight(e.get("severity")) for e in events if e.get("system_id") == sid) 
+    if not agent_is_online(system):
+        score += 8
+    return min(100, max(0, int(score)))
+
+
+def v11_risk_band(score):
+    score = int(score or 0)
+    if score >= 75:
+        return "CRITICAL", "red"
+    if score >= 50:
+        return "HIGH", "red"
+    if score >= 25:
+        return "ELEVATED", "yellow"
+    return "STABLE", "green"
+
+
+def v11_posture(systems, incidents, events):
+    return {
+        "systems": len(systems),
+        "healthy": sum(s.get("status") == "Healthy" for s in systems),
+        "agents": sum(agent_is_online(s) for s in systems),
+        "open_incidents": sum(i.get("status") == "Open" for i in incidents),
+        "attack_signals": sum(is_attack_event(e) for e in events),
+        "risk": round(sum(v11_system_risk(s, incidents, events) for s in systems) / len(systems)) if systems else 0,
+    }
+
+
+def v11_render_command_rail(posture):
+    state = "ATTENTION REQUIRED" if posture.get("attack_signals") else "LIVE MONITORING"
+    tone = "danger" if posture.get("attack_signals") else "safe"
+    st.markdown(
+        f'''<div class="command-rail"><div class="rail-left"><span class="rail-brand">GUARDIANEYE COMMAND CENTER</span><span class="rail-state {tone}">{safe_text(state)}</span></div><div class="rail-right">{posture.get("systems",0)} systems · {posture.get("agents",0)} agents online · refresh {UI_REFRESH_INTERVAL_MS//1000}s</div></div>''',
+        unsafe_allow_html=True,
+    )
+
+
+def v11_render_command_tiles(posture):
+    tiles = [
+        ("SYSTEMS", posture.get("systems",0), "مراقبة مركزية", ""),
+        ("HEALTHY", posture.get("healthy",0), "خدمات مستجيبة", "green"),
+        ("AGENTS", posture.get("agents",0), "heartbeat ≤ 90s", "green"),
+        ("OPEN INCIDENTS", posture.get("open_incidents",0), "تحتاج متابعة", "red" if posture.get("open_incidents") else ""),
+    ]
+    html_parts = [f'<div class="command-tile {tone}"><div class="kicker">{safe_text(label)}</div><div class="value">{safe_text(v11_format_number(value))}</div><div class="note">{safe_text(note)}</div></div>' for label,value,note,tone in tiles]
+    st.markdown('<div class="command-tile-grid">' + ''.join(html_parts) + '</div>', unsafe_allow_html=True)
+
+
+def v11_filter_systems(systems, query="", status="All", agent_state="All"):
+    q = str(query or "").strip().lower()
+    result = []
+    for s in systems:
+        if q and q not in str(s.get("company","")).lower() and q not in str(s.get("id","")).lower():
+            continue
+        if status != "All" and s.get("status", "Not Checked") != status:
+            continue
+        agent = "Online" if agent_is_online(s) else "Offline"
+        if agent_state != "All" and agent != agent_state:
+            continue
+        result.append(s)
+    return result
+
+
+def v11_filter_events(events, systems, query="", severities=None, system_id=None):
+    q = str(query or "").strip().lower()
+    sev_set = set(severities or [])
+    by_id = {s.get("id"): s for s in systems}
+    result = []
+    for e in events:
+        if system_id and e.get("system_id") != system_id:
+            continue
+        sev = str(e.get("severity") or "Info")
+        if sev_set and sev not in sev_set:
+            continue
+        company = by_id.get(e.get("system_id"), {}).get("company", "")
+        hay = " ".join([str(e.get("attack_type") or ""), str(e.get("event_type") or ""), str(e.get("source_ip") or ""), str(company), str(e.get("evidence") or "")]).lower()
+        if q and q not in hay:
+            continue
+        result.append(e)
+    return result
+
+
+def v11_build_fleet_dataframe(systems, incidents, events, heartbeats):
+    hb = latest_heartbeat_by_system(heartbeats)
+    rows = []
+    for s in systems:
+        sid = s.get("id")
+        latest = get_latest_security_event(events, sid)
+        score = v11_system_risk(s, incidents, events)
+        rows.append({
+            "System": s.get("company", "Unknown"),
+            "Status": s.get("status", "Not Checked"),
+            "Agent": "Online" if agent_is_online(s) else "Offline",
+            "Risk": score,
+            "Band": v11_risk_band(score)[0],
+            "Latest Signal": latest.get("attack_type") if latest else "—",
+            "Severity": latest.get("severity") if latest else "—",
+            "OS": hb.get(sid, {}).get("os_name", "—"),
+            "CPU": hb.get(sid, {}).get("cpu_percent"),
+            "Memory": hb.get(sid, {}).get("memory_percent"),
+        })
+    return pd.DataFrame(rows)
+
+
+def v11_render_fleet_table(systems, incidents, events, heartbeats):
+    df = v11_build_fleet_dataframe(systems, incidents, events, heartbeats)
+    if df.empty:
+        render_empty_state("الأسطول فارغ", "أضف منظومة لبدء بناء المراقبة المركزية.", "إضافة منظومة", "Add System")
+        return df
+    st.dataframe(df, use_container_width=True, hide_index=True)
+    return df
+
+
+def v11_build_global_report(systems, incidents, events, heartbeats):
+    posture = v11_posture(systems, incidents, events)
+    lines = [
+        "# GuardianEye Global SOC Report", "", f"Generated: {iso_now()}", f"Version: {APP_VERSION}", "",
+        "## Fleet posture", f"Systems: {posture['systems']}", f"Healthy: {posture['healthy']}",
+        f"Agents online: {posture['agents']}", f"Open incidents: {posture['open_incidents']}",
+        f"Attack signals: {posture['attack_signals']}", f"Average risk: {posture['risk']}/100", "",
+        "## Systems",
+    ]
+    for row in v11_build_fleet_dataframe(systems, incidents, events, heartbeats).to_dict("records"):
+        lines.append(f"- {row['System']} | status={row['Status']} | agent={row['Agent']} | risk={row['Risk']}/100 ({row['Band']}) | latest={row['Latest Signal']} | severity={row['Severity']}")
+    lines.extend(["", "## Open incidents"])
+    for i in incidents:
+        if i.get("status") == "Open":
+            lines.append(f"- {i.get('title')} | {i.get('severity')} | source={i.get('source_ip') or 'Unknown'} | events={i.get('event_count',0)}")
+    return "\n".join(lines)
+
+
+def v11_threat_hunt_page():
+    systems = load_systems(); events = load_security_events(1000); incidents = load_incidents(500)
+    render_page_back_controls("Threat Hunt"); render_nav_breadcrumb("Threat Hunt")
+    by_id = {s.get("id"): s for s in systems}
+    with st.container(border=True):
+        q = st.text_input("بحث مركزي", placeholder="IP / attack type / evidence / system...", key="v11_hunt_query")
+        sev = st.multiselect("الخطورة", ["Critical","High","Medium","Low","Info"], default=["Critical","High","Medium"], key="v11_hunt_sev")
+        selected_company = st.selectbox("النطاق", ["All"] + [s.get("company","Unknown") for s in systems], key="v11_hunt_system")
+    sid = next((s.get("id") for s in systems if s.get("company") == selected_company), None) if selected_company != "All" else None
+    filtered = v11_filter_events(events, systems, q, sev, sid)
+    c1,c2,c3 = st.columns(3)
+    with c1: st.markdown(metric_card("Signals",len(filtered),"نتائج"), unsafe_allow_html=True)
+    with c2: st.markdown(metric_card("Sources",len({e.get('source_ip') for e in filtered if e.get('source_ip')}),"عناوين"), unsafe_allow_html=True)
+    with c3: st.markdown(metric_card("Systems",len({e.get('system_id') for e in filtered if e.get('system_id')}),"منظومات"), unsafe_allow_html=True)
+    render_global_event_feed(filtered, systems, limit=30)
+
+
+def v11_operations_page():
+    systems = load_systems(); events = load_security_events(500); incidents = load_incidents(300); heartbeats = load_heartbeats(500)
+    render_page_back_controls("Operations"); render_nav_breadcrumb("Operations")
+    posture = v11_posture(systems, incidents, events); v11_render_command_rail(posture); v11_render_command_tiles(posture)
+    a,b = st.columns([1.1,.9], gap="large")
+    with a:
+        st.markdown('<div class="panel">', unsafe_allow_html=True); panel_header("Service latency","آخر قياس")
+        render_latency_chart(systems); st.markdown('</div>', unsafe_allow_html=True)
+    with b:
+        st.markdown('<div class="panel">', unsafe_allow_html=True); panel_header("Agent fleet","Heartbeat / CPU / Memory")
+        render_agent_health_matrix(systems, heartbeats); st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('<div class="panel">', unsafe_allow_html=True); panel_header("Fleet risk","Risk by system")
+    render_risk_distribution(systems, incidents, events); st.markdown('</div>', unsafe_allow_html=True)
+
+
+def v11_reports_page():
+    systems = load_systems(); incidents = load_incidents(500); events = load_security_events(1000); heartbeats = load_heartbeats(500)
+    render_page_back_controls("Reports"); render_nav_breadcrumb("Reports")
+    report = v11_build_global_report(systems, incidents, events, heartbeats)
+    df_fleet = v11_build_fleet_dataframe(systems, incidents, events, heartbeats)
+    df_security = build_security_export(events, systems)
+    df_incidents = build_incident_export(incidents, systems)
+    a,b,c,d = st.columns(4)
+    with a: st.download_button("Global Report", report, "GuardianEye_Global_Report.md", "text/markdown", use_container_width=True)
+    with b: st.download_button("Fleet CSV", df_fleet.to_csv(index=False).encode(), "GuardianEye_Fleet.csv", "text/csv", use_container_width=True)
+    with c: st.download_button("Security CSV", df_security.to_csv(index=False).encode(), "GuardianEye_Security.csv", "text/csv", use_container_width=True)
+    with d: st.download_button("Incidents CSV", df_incidents.to_csv(index=False).encode(), "GuardianEye_Incidents.csv", "text/csv", use_container_width=True)
+    st.markdown('<div class="panel">', unsafe_allow_html=True); panel_header("Fleet snapshot","لقطة موحدة")
+    v11_render_fleet_table(systems, incidents, events, heartbeats); st.markdown('</div>', unsafe_allow_html=True)
+
+
+def v11_notifications_page():
+    systems = load_systems(); incidents = load_incidents(500); events = load_security_events(1000)
+    render_page_back_controls("Notifications"); render_nav_breadcrumb("Notifications")
+    render_notification_center(events, incidents, systems)
+
+
+def v11_settings_page():
+    systems = load_systems(); render_page_back_controls("Settings"); render_nav_breadcrumb("Settings")
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    panel_header("Control Plane", "حالة التشغيل والإعدادات")
+    rows = [
+        {"Component":"Supabase URL","State":"READY" if SUPABASE_URL else "MISSING","Value":SUPABASE_URL or "—"},
+        {"Component":"Service Role","State":"READY" if SUPABASE_SERVICE_ROLE_KEY else "MISSING","Value":"Configured" if SUPABASE_SERVICE_ROLE_KEY else "Missing"},
+        {"Component":"Encryption","State":"READY" if GUARDIAN_ENCRYPTION_KEY else "MISSING","Value":"Configured" if GUARDIAN_ENCRYPTION_KEY else "Missing"},
+        {"Component":"Admin","State":"READY" if ADMIN_USER else "MISSING","Value":"Configured" if ADMIN_USER else "Missing"},
+    ]
+    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+    st.caption(f"GuardianEye v{APP_VERSION} · {len(systems)} registered systems · refresh {UI_REFRESH_INTERVAL_MS//1000}s")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
+    st.markdown("<div class=\"panel\">", unsafe_allow_html=True)
+    panel_header("Architecture & operating catalog", "المكونات والقواعد ومسار التشغيل")
+    v11_render_catalogs()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+
+def v11_enrich_sidebar():
+    return V11_PAGES
+
+
+# Preserve the existing overview but add a global command layer above it.
+_original_v10_overview = overview_page
+
+def overview_page():
+    systems = load_systems(); incidents = load_incidents(300); events = load_security_events(500)
+    posture = v11_posture(systems, incidents, events)
+    v11_render_command_rail(posture)
+    v11_render_command_tiles(posture)
+    _original_v10_overview()
+    st.markdown('<div class="panel">', unsafe_allow_html=True)
+    panel_header("Fleet Intelligence", "ترتيب المنظومات حسب مؤشر المخاطر")
+    v11_render_fleet_table(systems, incidents, events, load_heartbeats(500))
+    st.markdown('</div>', unsafe_allow_html=True)
+
+
 # ================================================================
 # Session state and dispatch
 # ================================================================
@@ -1984,18 +4236,9 @@ with st.sidebar:
     )
     st.divider()
     st.markdown('<div class="panel-note">CONTROL CENTER</div>', unsafe_allow_html=True)
+    st.caption("استخدم سهم «<<» لإخفاء الأقسام، وسيظهر «>>» لإعادتها.")
     current = st.session_state.get("page", "Overview")
-    sidebar_pages = [
-        ("Overview", "مركز المراقبة"),
-        ("Fleet", "المنظومات"),
-        ("Add System", "إضافة منظومة"),
-        ("Security", "الأمن"),
-        ("Incidents", "الحوادث"),
-        ("Analytics", "التحليلات"),
-        ("Events", "الأحداث"),
-        ("Agents", "الحساسات"),
-        ("Agent Setup", "إعداد الحساس"),
-    ]
+    sidebar_pages = v11_enrich_sidebar()
     for key, label in sidebar_pages:
         if st.button(("● " if current == key else "○ ") + label, key=f"side_{key}", use_container_width=True):
             set_page(key)
@@ -2003,8 +4246,6 @@ with st.sidebar:
     st.markdown(f'<div class="small-muted">Signed in as<br><strong>{safe_text(ADMIN_USER)}</strong></div>', unsafe_allow_html=True)
     if st.button("تسجيل الخروج", use_container_width=True, key="logout_button"):
         logout()
-
-render_nav()
 
 try:
     page = st.session_state.page
@@ -2026,6 +4267,16 @@ try:
         agents_page()
     elif page == "Agent Setup":
         agent_setup_page()
+    elif page == "Threat Hunt":
+        v11_threat_hunt_page()
+    elif page == "Operations":
+        v11_operations_page()
+    elif page == "Reports":
+        v11_reports_page()
+    elif page == "Notifications":
+        v11_notifications_page()
+    elif page == "Settings":
+        v11_settings_page()
     else:
         st.session_state.page = "Overview"
         st.rerun()
