@@ -16,7 +16,7 @@ from streamlit_autorefresh import st_autorefresh
 
 
 APP_NAME = "GuardianEye"
-APP_VERSION = "5.0"
+APP_VERSION = "5.2"
 HEALTHY_THRESHOLD_MS = 1500
 AGENT_OFFLINE_SECONDS = 90
 INCIDENT_OPEN_WINDOW_MINUTES = 15
@@ -33,51 +33,155 @@ st.markdown(
 <style>
 :root{
   --bg:#070a0f;
-  --surface:#0d131b;
-  --surface2:#111923;
-  --border:rgba(148,163,184,.14);
-  --border2:rgba(148,163,184,.23);
-  --text:#eef3f8;
-  --muted:#8996a6;
-  --good:#42d392;
+  --surface:#0b1119;
+  --surface-2:#0f1722;
+  --surface-3:#131d2a;
+  --line:rgba(148,163,184,.14);
+  --line-strong:rgba(148,163,184,.24);
+  --text:#f4f7fb;
+  --muted:#8e9aaa;
+  --good:#46d89a;
   --warn:#f2bd62;
   --bad:#f06a78;
-  --blue:#4aa8ff;
+  --blue:#62b5ff;
 }
-html,body,[class*="css"]{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
+html,body,[class*="css"]{
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
 body{background:var(--bg);color:var(--text);}
-.block-container{max-width:1500px;padding-top:1.2rem;padding-bottom:3rem;}
-div[data-testid="stSidebar"]{background:#090e15;border-right:1px solid var(--border);}
-.small-muted{color:var(--muted);font-size:.82rem;}
-.brand{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;}
-.brand-sub{color:var(--muted);font-size:.78rem;margin-top:.15rem;}
-.page-title{font-size:2rem;font-weight:800;letter-spacing:-.035em;margin-bottom:.15rem;}
-.page-subtitle{color:var(--muted);margin-bottom:1.2rem;}
-.metric-card{background:linear-gradient(180deg,rgba(17,25,35,.96),rgba(13,19,27,.96));border:1px solid var(--border);border-radius:16px;padding:1rem 1.05rem;min-height:118px;}
-.metric-label{color:var(--muted);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;}
-.metric-value{font-size:2rem;font-weight:800;margin-top:.25rem;}
-.metric-note{color:var(--muted);font-size:.75rem;margin-top:.15rem;}
-.status-pill{display:inline-block;padding:.23rem .62rem;border-radius:999px;border:1px solid var(--border);font-size:.72rem;font-weight:750;}
-.good{background:rgba(66,211,146,.09);color:#7ae9b0;}
-.warn{background:rgba(242,189,98,.09);color:#f6d18b;}
-.bad{background:rgba(240,106,120,.09);color:#ff9ba5;}
-.neutral{background:rgba(148,163,184,.07);color:#c5cfda;}
-.info{background:rgba(74,168,255,.09);color:#9bcfff;}
-.incident-card{background:#0d141d;border:1px solid var(--border);border-radius:15px;padding:1rem 1.05rem;margin-bottom:.75rem;}
+.block-container{max-width:1520px;padding:1.15rem 2rem 3.5rem;}
+
+/* Streamlit chrome - best effort for the app surface */
+#MainMenu{visibility:hidden;}
+footer{visibility:hidden;display:none!important;}
+[data-testid="stToolbar"]{visibility:hidden;display:none!important;}
+[data-testid="stDecoration"]{display:none!important;}
+[data-testid="stStatusWidget"]{display:none!important;}
+
+div[data-testid="stSidebar"]{
+  background:linear-gradient(180deg,#090e15 0%,#080c12 100%);
+  border-right:1px solid var(--line);
+}
+div[data-testid="stSidebarContent"]{padding:1.15rem .9rem 1.4rem;}
+div[data-testid="stSidebarNav"]{display:none;}
+
+/* Sidebar radio navigation */
+div[role="radiogroup"]{gap:.28rem!important;}
+div[role="radiogroup"] > label{
+  background:transparent;
+  border:1px solid transparent;
+  border-radius:10px;
+  padding:.58rem .72rem!important;
+  transition:all .18s ease;
+}
+div[role="radiogroup"] > label:hover{
+  background:rgba(98,181,255,.045);
+  border-color:var(--line);
+}
+div[role="radiogroup"] > label:has(input:checked){
+  background:linear-gradient(90deg,rgba(98,181,255,.12),rgba(98,181,255,.035));
+  border-color:rgba(98,181,255,.22);
+}
+
+.brand-wrap{padding:.3rem .2rem 1rem;}
+.brand-mark{display:flex;align-items:center;gap:.6rem;}
+.brand-dot{
+  width:12px;height:12px;border-radius:50%;
+  background:var(--good);
+  box-shadow:0 0 0 5px rgba(70,216,154,.08),0 0 20px rgba(70,216,154,.20);
+}
+.brand{font-size:1.42rem;font-weight:850;letter-spacing:-.035em;}
+.brand-sub{color:var(--muted);font-size:.73rem;margin-top:.25rem;padding-left:1.15rem;}
+
+.page-kicker{color:#6e7f91;font-size:.7rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;}
+.page-title{font-size:2.05rem;font-weight:850;letter-spacing:-.045em;margin:.18rem 0 .2rem;}
+.page-subtitle{color:var(--muted);font-size:.9rem;margin-bottom:1.15rem;}
+
+.command-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  background:rgba(10,16,24,.72);border:1px solid var(--line);
+  border-radius:15px;padding:.78rem .9rem;margin-bottom:1rem;
+  backdrop-filter:blur(10px);
+}
+.command-left{display:flex;align-items:center;gap:.65rem;min-width:0;}
+.command-label{font-size:.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 5px rgba(70,216,154,.08);}
+.command-right{font-size:.76rem;color:var(--muted);white-space:nowrap;}
+
+.hero-panel{
+  background:radial-gradient(circle at 80% 10%,rgba(98,181,255,.09),transparent 34%),
+             linear-gradient(135deg,#0b121b,#0a0f16 62%,#0b1119);
+  border:1px solid var(--line-strong);border-radius:18px;padding:1.2rem 1.25rem;
+  margin-bottom:1rem;
+}
+.hero-title{font-size:1.35rem;font-weight:820;letter-spacing:-.025em;}
+.hero-text{color:var(--muted);font-size:.86rem;line-height:1.65;max-width:900px;margin-top:.3rem;}
+.hero-meta{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.9rem;color:#a5b0bf;font-size:.74rem;}
+.hero-meta strong{color:#e6edf5;font-weight:750;}
+
+.metric-card{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(17,25,35,.96),rgba(11,17,25,.96));
+  border:1px solid var(--line);border-radius:15px;padding:1rem 1.05rem;min-height:114px;
+}
+.metric-card:after{content:"";position:absolute;inset:0 auto 0 0;width:2px;background:rgba(98,181,255,.34);}
+.metric-label{color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;font-weight:800;}
+.metric-value{font-size:2rem;font-weight:860;line-height:1.05;margin-top:.38rem;letter-spacing:-.035em;}
+.metric-note{color:#7e8b9b;font-size:.72rem;margin-top:.3rem;}
+
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:1rem;margin:1.25rem 0 .65rem;}
+.section-title{font-size:.95rem;font-weight:820;letter-spacing:-.015em;}
+.section-note{color:var(--muted);font-size:.72rem;}
+
+.status-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.22rem .56rem;border-radius:999px;border:1px solid var(--line);font-size:.69rem;font-weight:800;}
+.good{background:rgba(70,216,154,.075);color:#7be8b1;}
+.warn{background:rgba(242,189,98,.075);color:#f7d38f;}
+.bad{background:rgba(240,106,120,.075);color:#ff9da7;}
+.neutral{background:rgba(148,163,184,.055);color:#c3ccd7;}
+.info{background:rgba(98,181,255,.07);color:#a8d5ff;}
+
+.incident-card{background:#0c131c;border:1px solid var(--line);border-radius:14px;padding:1rem 1.05rem;margin-bottom:.7rem;}
 .incident-critical{border-color:rgba(240,106,120,.32);}
 .incident-high{border-color:rgba(240,106,120,.22);}
 .incident-medium{border-color:rgba(242,189,98,.20);}
-.source-ip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;}
-.mini{font-size:.75rem;color:var(--muted);}
-.alert-banner{border:1px solid rgba(240,106,120,.35);background:linear-gradient(180deg,rgba(71,18,27,.44),rgba(39,15,21,.38));padding:1rem 1.05rem;border-radius:15px;margin-bottom:1rem;}
-.timeline-row{padding:.75rem 0;border-bottom:1px solid var(--border);}
-.stButton>button{border-radius:10px;font-weight:700;background:#111a25;border:1px solid var(--border2);}
-.stButton>button:hover{border-color:rgba(74,168,255,.55);background:#152130;}
-[data-testid="stDataFrame"]{border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.source-ip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:750;}
+.mini{font-size:.72rem;color:var(--muted);letter-spacing:.06em;}
+.alert-banner{border:1px solid rgba(240,106,120,.24);background:linear-gradient(180deg,rgba(66,18,27,.40),rgba(34,13,20,.28));padding:.9rem 1rem;border-radius:13px;margin-bottom:1rem;}
+.timeline-row{padding:.72rem 0;border-bottom:1px solid var(--line);}
+
+.stButton>button{
+  border-radius:10px;font-weight:760;background:#111a25;border:1px solid var(--line-strong);
+  min-height:2.55rem;transition:all .18s ease;
+}
+.stButton>button:hover{border-color:rgba(98,181,255,.42);background:#152130;transform:translateY(-1px);}
+.stTextInput input,.stTextArea textarea,.stSelectbox>div>div{border-radius:10px!important;}
+[data-testid="stDataFrame"]{border:1px solid var(--line);border-radius:12px;overflow:hidden;}
+
+.login-shell{max-width:1180px;margin:4.5vh auto 0;}
+.login-panel{
+  background:linear-gradient(145deg,rgba(13,20,29,.98),rgba(8,12,18,.98));
+  border:1px solid var(--line-strong);border-radius:22px;padding:1.4rem;
+  box-shadow:0 24px 80px rgba(0,0,0,.28);
+}
+.login-brand{font-size:2.1rem;font-weight:900;letter-spacing:-.055em;}
+.login-kicker{font-size:.72rem;color:#6f7f90;letter-spacing:.15em;text-transform:uppercase;font-weight:800;}
+.login-copy{color:var(--muted);line-height:1.75;font-size:.86rem;}
+.feature-row{padding:.85rem 0;border-bottom:1px solid var(--line);}
+.feature-row:last-child{border-bottom:0;}
+.feature-no{color:#6283a2;font-size:.7rem;font-weight:850;letter-spacing:.08em;}
+.feature-title{font-weight:820;margin:.15rem 0;}
+.feature-sub{color:var(--muted);font-size:.74rem;}
+
+@media (max-width:900px){
+  .block-container{padding-left:1rem;padding-right:1rem;}
+  .login-shell{margin-top:1.5vh;}
+  .command-bar{align-items:flex-start;flex-direction:column;}
+}
 </style>
 """,
     unsafe_allow_html=True,
 )
+
 
 # Refresh UI; database monitoring is separately protected against excessive checks.
 st_autorefresh(interval=10000, limit=None, key="guardianeye_refresh")
@@ -453,25 +557,30 @@ def agent_is_online(system):
 
 
 def login():
-    st.markdown('<div class="brand">GUARDIANEYE · SECURITY OPERATIONS</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">مركز مراقبة أمني وتشغيلي للأنظمة المصرح بها</div>', unsafe_allow_html=True)
-    left, right = st.columns([1.05, .95], gap="large")
+    st.markdown('<div class="login-shell">', unsafe_allow_html=True)
+    left, right = st.columns([1.08, .92], gap="large")
+
     with left:
-        st.markdown("### مراقبة من مكان واحد")
-        st.write("راقب صحة الخدمات، استقبال المعلومات من الحساس الموجود داخل المنظومة، اكتشاف السلوك الهجومي، وإدارة الحوادث والتقارير.")
-        st.markdown("""
-        <div class="incident-card">
-          <div class="mini">01</div><strong>صحة المنظومة</strong><br><span class="small-muted">التوفر وزمن الاستجابة</span>
-        </div>
-        <div class="incident-card">
-          <div class="mini">02</div><strong>المراقبة الأمنية</strong><br><span class="small-muted">أحداث من داخل المنظومة وعناوين المصادر</span>
-        </div>
-        <div class="incident-card">
-          <div class="mini">03</div><strong>الحوادث والتقارير</strong><br><span class="small-muted">تنبيه، تفاصيل، أدلة، وتقرير للمختصين</span>
-        </div>
-        """, unsafe_allow_html=True)
+        st.markdown(
+            '<div class="login-panel">'
+            '<div class="login-kicker">SECURITY OPERATIONS PLATFORM</div>'
+            '<div class="login-brand">GuardianEye</div>'
+            '<div class="login-copy">مركز موحد لمراقبة صحة المنظومات، استقبال بيانات الحساس، اكتشاف السلوك الأمني، وإدارة الحوادث والأدلة.</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            '<div class="feature-row"><div class="feature-no">01</div><div class="feature-title">Operational visibility</div><div class="feature-sub">مراقبة التوفر وزمن الاستجابة وحالة الحساس.</div></div>'
+            '<div class="feature-row"><div class="feature-no">02</div><div class="feature-title">Security telemetry</div><div class="feature-sub">استقبال الأحداث الأمنية من داخل البيئة المصرح بها.</div></div>'
+            '<div class="feature-row"><div class="feature-no">03</div><div class="feature-title">Incident workflow</div><div class="feature-sub">تحويل الأحداث إلى حوادث قابلة للمراجعة والتقرير.</div></div>'
+            '<div style="margin-top:1rem;color:#66778a;font-size:.68rem;letter-spacing:.08em;">AUTHORIZED OPERATIONS ONLY</div>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+
     with right:
-        st.markdown("### تسجيل الدخول")
+        st.markdown('<div class="login-panel">', unsafe_allow_html=True)
+        st.markdown('<div class="login-kicker">CONTROL CENTER</div>', unsafe_allow_html=True)
+        st.markdown('### تسجيل الدخول', unsafe_allow_html=True)
         username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
         password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
         if st.button("دخول إلى مركز المراقبة", use_container_width=True):
@@ -482,6 +591,9 @@ def login():
             else:
                 st.error("بيانات الدخول غير صحيحة.")
         st.caption("Authorized access only.")
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def logout():
@@ -502,56 +614,77 @@ def overview_page():
 
     open_incidents = [i for i in incidents if i.get("status") == "Open"]
     critical = sum(1 for i in open_incidents if i.get("severity") == "Critical")
+    high = sum(1 for i in open_incidents if i.get("severity") == "High")
     online_agents = sum(1 for s in systems if agent_is_online(s))
     healthy = sum(1 for s in systems if s.get("status") == "Healthy")
+    slow = sum(1 for s in systems if s.get("status") == "Slow")
 
+    st.markdown('<div class="page-kicker">COMMAND CENTER</div>', unsafe_allow_html=True)
     st.markdown('<div class="page-title">مركز المراقبة</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">الصحة التشغيلية والأمنية للمنظومات المسجلة</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">الرؤية التشغيلية والأمنية للمنظومات المسجلة في الوقت الحالي</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        f'<div class="command-bar"><div class="command-left"><span class="live-dot"></span><span class="command-label">GuardianEye Core</span><span style="color:#d8e0e8;font-size:.78rem;">Live monitoring</span></div><div class="command-right">Agent window · {AGENT_OFFLINE_SECONDS}s · Refresh · 10s</div></div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        f'<div class="hero-panel"><div class="hero-title">صورة تشغيلية موحدة</div>'
+        f'<div class="hero-text">GuardianEye يجمع صحة الخدمات مع بيانات الحساس والأحداث الأمنية في مساحة واحدة، ثم يعرضها بصيغة مناسبة للمراقبة اليومية والتحقيق.</div>'
+        f'<div class="hero-meta"><span>Healthy <strong>{healthy}</strong></span><span>Slow <strong>{slow}</strong></span><span>Agents online <strong>{online_agents}</strong></span><span>Open incidents <strong>{len(open_incidents)}</strong></span><span>High/Critical <strong>{high + critical}</strong></span></div></div>',
+        unsafe_allow_html=True,
+    )
 
     cols = st.columns(5)
     metrics = [
         ("المنظومات", len(systems), "مسجلة في قاعدة البيانات"),
         ("Healthy", healthy, "الخدمات المستجيبة"),
-        ("الحساسات النشطة", online_agents, "آخر 90 ثانية"),
+        ("الحساسات النشطة", online_agents, f"آخر {AGENT_OFFLINE_SECONDS} ثانية"),
         ("الحوادث المفتوحة", len(open_incidents), "تحتاج متابعة"),
-        ("حرجة", critical, "تحتاج تدخلًا سريعًا"),
+        ("حرجة", critical, "أولوية قصوى"),
     ]
     for col, data in zip(cols, metrics):
         with col:
             st.markdown(metric_card(*data), unsafe_allow_html=True)
 
     if open_incidents:
-        st.markdown('<div class="alert-banner"><strong>تنبيه أمني:</strong> توجد حوادث أمنية مفتوحة على منظومات مراقبة.</div>', unsafe_allow_html=True)
+        st.markdown('<div class="alert-banner"><strong>Security attention:</strong> توجد حوادث أمنية مفتوحة على منظومات المراقبة.</div>', unsafe_allow_html=True)
 
-    st.markdown("### حالة المنظومات")
+    st.markdown('<div class="section-head"><div><div class="section-title">حالة المنظومات</div><div class="section-note">Operational health + agent telemetry</div></div></div>', unsafe_allow_html=True)
     rows = []
     for s in systems:
         rows.append({
             "المنظومة": s.get("company", "—"),
             "الحالة": s.get("status", "Not Checked"),
-            "استجابة": response_ms_text(s.get("response_ms")),
+            "الاستجابة": response_ms_text(s.get("response_ms")),
             "الحساس": "Online" if agent_is_online(s) else "Offline",
             "آخر فحص": s.get("last_checked") or "—",
-            "آخر إرسال أمني": s.get("agent_last_seen") or "—",
+            "آخر إرسال": s.get("agent_last_seen") or "—",
         })
     if rows:
         st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
     else:
         st.info("لا توجد منظومات بعد.")
 
-    st.markdown("### آخر الحوادث الأمنية")
-    if not security_events:
-        st.info("لا توجد أحداث أمنية بعد.")
-    else:
-        for ev in security_events[:8]:
-            st.markdown(
-                f'<div class="incident-card"><strong>{safe_text(ev.get("attack_type") or ev.get("event_type"))}</strong> '
-                f'{severity_badge(ev.get("severity") or "Medium")} '
-                f'<span class="small-muted"> · {safe_text(ev.get("event_time"))}</span><br>'
-                f'<span class="source-ip">{safe_text(ev.get("source_ip") or "Unknown")}</span>'
-                f' → {safe_text(ev.get("system_id"))}<br>{safe_text(ev.get("evidence") or "")}</div>',
-                unsafe_allow_html=True,
-            )
+    left, right = st.columns([1.18, .82], gap="large")
+    with left:
+        st.markdown('<div class="section-head"><div><div class="section-title">آخر الأحداث الأمنية</div><div class="section-note">Most recent detections</div></div></div>', unsafe_allow_html=True)
+        if not security_events:
+            st.info("لا توجد أحداث أمنية بعد.")
+        else:
+            for ev in security_events[:7]:
+                st.markdown(
+                    f'<div class="incident-card"><div style="display:flex;justify-content:space-between;gap:1rem;align-items:flex-start;"><div><strong>{safe_text(ev.get("attack_type") or ev.get("event_type"))}</strong><br><span class="source-ip">{safe_text(ev.get("source_ip") or "Unknown")}</span></div>{severity_badge(ev.get("severity") or "Medium")}</div><div class="small-muted" style="margin-top:.55rem;">{safe_text(ev.get("event_time"))}</div><div style="margin-top:.4rem;color:#b9c3ce;font-size:.78rem;line-height:1.55;">{safe_text(ev.get("evidence") or "")}</div></div>',
+                    unsafe_allow_html=True,
+                )
+    with right:
+        st.markdown('<div class="section-head"><div><div class="section-title">ملخص الحوادث</div><div class="section-note">Current incident posture</div></div></div>', unsafe_allow_html=True)
+        summary_rows = [
+            {"الفئة": "Critical", "العدد": critical},
+            {"الفئة": "High", "العدد": high},
+            {"الفئة": "Medium / Low", "العدد": sum(1 for i in open_incidents if i.get("severity") not in ("Critical", "High"))},
+        ]
+        st.dataframe(pd.DataFrame(summary_rows), use_container_width=True, hide_index=True)
 
 
 def systems_page():
