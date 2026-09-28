@@ -58,6 +58,23 @@ section[data-testid="stSidebar"] > div{padding-top:1.1rem;}
 /* Streamlit chrome */
 [data-testid="stToolbar"],[data-testid="stDecoration"],#MainMenu,footer{display:none !important;visibility:hidden !important;}
 
+/* Keep the sidebar collapse / expand control reachable.
+   Streamlit versions may expose either test id. */
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapseButton"]{
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+  z-index:999999 !important;
+}
+[data-testid="stSidebarCollapsedControl"] button,
+[data-testid="stSidebarCollapseButton"] button{
+  visibility:visible !important;
+  opacity:1 !important;
+  pointer-events:auto !important;
+}
+
 /* Brand */
 .brand-wrap{padding:.35rem 0 1rem;}
 .brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0f2234,#10263a);border:1px solid rgba(89,215,255,.22);display:inline-flex;align-items:center;justify-content:center;color:var(--cyan);font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.18);margin-bottom:.7rem;}
