@@ -16,7 +16,7 @@ from streamlit_autorefresh import st_autorefresh
 
 
 APP_NAME = "GuardianEye"
-APP_VERSION = "6.0"
+APP_VERSION = "6.3"
 HEALTHY_THRESHOLD_MS = 1500
 AGENT_OFFLINE_SECONDS = 90
 INCIDENT_OPEN_WINDOW_MINUTES = 15
@@ -32,121 +32,101 @@ st.markdown(
     """
 <style>
 :root{
-  --bg:#06080d;
-  --surface:#0b1018;
-  --surface-2:#0f1621;
-  --surface-3:#121c28;
-  --line:rgba(148,163,184,.16);
-  --line-strong:rgba(148,163,184,.28);
-  --text:#f2f6fb;
-  --muted:#8491a3;
-  --blue:#4ea6ff;
-  --cyan:#59d7ff;
-  --good:#49d49b;
-  --warn:#f0bc61;
-  --bad:#ff6e7d;
-  --shadow:0 18px 50px rgba(0,0,0,.28);
+  --bg:#070a0f;
+  --surface:#0d131b;
+  --surface2:#111923;
+  --border:rgba(148,163,184,.14);
+  --border2:rgba(148,163,184,.23);
+  --text:#eef3f8;
+  --muted:#8996a6;
+  --good:#42d392;
+  --warn:#f2bd62;
+  --bad:#f06a78;
+  --blue:#4aa8ff;
 }
 html,body,[class*="css"]{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
 body{background:var(--bg);color:var(--text);}
-section[data-testid="stMain"]{direction:rtl;}
-section[data-testid="stSidebar"]{direction:rtl;}
-.block-container{max-width:1540px;padding-top:1.1rem;padding-bottom:4rem;}
-section[data-testid="stSidebar"]{background:linear-gradient(180deg,#080c13 0%,#0a0f17 100%);border-right:1px solid var(--line);}
-section[data-testid="stSidebar"] > div{padding-top:1.1rem;}
+.block-container{max-width:1500px;padding-top:1.2rem;padding-bottom:3rem;}
+div[data-testid="stSidebar"]{background:#090e15;border-right:1px solid var(--border);}
+.small-muted{color:var(--muted);font-size:.82rem;}
+.brand{font-size:1.55rem;font-weight:800;letter-spacing:-.02em;}
+.brand-sub{color:var(--muted);font-size:.78rem;margin-top:.15rem;}
+.page-title{font-size:2rem;font-weight:800;letter-spacing:-.035em;margin-bottom:.15rem;}
+.page-subtitle{color:var(--muted);margin-bottom:1.2rem;}
+.metric-card{background:linear-gradient(180deg,rgba(17,25,35,.96),rgba(13,19,27,.96));border:1px solid var(--border);border-radius:16px;padding:1rem 1.05rem;min-height:118px;}
+.metric-label{color:var(--muted);font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;}
+.metric-value{font-size:2rem;font-weight:800;margin-top:.25rem;}
+.metric-note{color:var(--muted);font-size:.75rem;margin-top:.15rem;}
+.status-pill{display:inline-block;padding:.23rem .62rem;border-radius:999px;border:1px solid var(--border);font-size:.72rem;font-weight:750;}
+.good{background:rgba(66,211,146,.09);color:#7ae9b0;}
+.warn{background:rgba(242,189,98,.09);color:#f6d18b;}
+.bad{background:rgba(240,106,120,.09);color:#ff9ba5;}
+.neutral{background:rgba(148,163,184,.07);color:#c5cfda;}
+.info{background:rgba(74,168,255,.09);color:#9bcfff;}
+.incident-card{background:#0d141d;border:1px solid var(--border);border-radius:15px;padding:1rem 1.05rem;margin-bottom:.75rem;}
+.incident-critical{border-color:rgba(240,106,120,.32);}
+.incident-high{border-color:rgba(240,106,120,.22);}
+.incident-medium{border-color:rgba(242,189,98,.20);}
+.source-ip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;}
+.mini{font-size:.75rem;color:var(--muted);}
+.alert-banner{border:1px solid rgba(240,106,120,.35);background:linear-gradient(180deg,rgba(71,18,27,.44),rgba(39,15,21,.38));padding:1rem 1.05rem;border-radius:15px;margin-bottom:1rem;}
+.timeline-row{padding:.75rem 0;border-bottom:1px solid var(--border);}
+.stButton>button{border-radius:10px;font-weight:700;background:#111a25;border:1px solid var(--border2);}
+.stButton>button:hover{border-color:rgba(74,168,255,.55);background:#152130;}
+[data-testid="stDataFrame"]{border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.command-rail{background:linear-gradient(180deg,rgba(12,18,27,.98),rgba(8,13,20,.98));border:1px solid var(--border2);border-radius:16px;padding:.65rem .7rem;margin:.25rem 0 1.15rem 0;box-shadow:0 12px 30px rgba(0,0,0,.18);}
+.command-rail-title{display:flex;justify-content:space-between;align-items:center;padding:0 .35rem .55rem .35rem;color:var(--muted);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:800;}
+.command-rail-title strong{color:var(--text);letter-spacing:.04em;text-transform:none;font-size:.8rem;}
+.section-kicker{color:#69b4ff;font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;font-weight:850;margin-bottom:.25rem;}
+.hero-grid{display:grid;grid-template-columns:1.35fr .85fr;gap:14px;margin:0 0 1rem 0;}
+.hero-panel{background:linear-gradient(135deg,rgba(17,28,41,.98),rgba(10,16,24,.98));border:1px solid var(--border2);border-radius:18px;padding:1.25rem 1.3rem;min-height:165px;position:relative;overflow:hidden;}
+.hero-panel:after{content:"";position:absolute;inset:auto -40px -75px auto;width:180px;height:180px;border-radius:50%;background:radial-gradient(circle,rgba(74,168,255,.12),transparent 68%);pointer-events:none;}
+.hero-title{font-size:1.45rem;font-weight:850;letter-spacing:-.03em;margin:.15rem 0 .3rem 0;}
+.hero-copy{color:var(--muted);font-size:.88rem;line-height:1.7;}
+.hero-value{font-size:2.35rem;font-weight:850;line-height:1;margin-top:.4rem;}
+.hero-label{color:var(--muted);font-size:.75rem;}
+.signal-row{display:flex;justify-content:space-between;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--border);}
+.signal-row:last-child{border-bottom:0;}
+.signal-name{font-weight:700;font-size:.84rem;}
+.signal-meta{color:var(--muted);font-size:.72rem;}
+.signal-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:.55rem;box-shadow:0 0 14px rgba(66,211,146,.55);}
+.signal-dot.warn{background:var(--warn);box-shadow:0 0 14px rgba(242,189,98,.45);}
+.signal-dot.bad{background:var(--bad);box-shadow:0 0 14px rgba(240,106,120,.45);}
 
-/* Streamlit chrome */
-[data-testid="stToolbar"],[data-testid="stDecoration"],#MainMenu,footer{display:none !important;visibility:hidden !important;}
+/* v6.3 interaction layer */
+.app-topline{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:.6rem .8rem;margin:-.35rem 0 1rem;border-bottom:1px solid rgba(148,163,184,.10);color:var(--muted);font-size:.72rem;letter-spacing:.10em;text-transform:uppercase;}
+.topline-right{display:flex;align-items:center;gap:.55rem;}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 0 4px rgba(66,211,146,.08),0 0 18px rgba(66,211,146,.45);display:inline-block;}
+.action-deck{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 1rem;}
+.action-card{background:linear-gradient(180deg,rgba(14,21,30,.98),rgba(9,14,21,.98));border:1px solid var(--border);border-radius:15px;padding:.7rem .8rem;min-height:78px;position:relative;overflow:hidden;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}
+.action-card:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(74,168,255,.55),transparent);opacity:.55;}
+.action-card:hover{transform:translateY(-2px);border-color:rgba(74,168,255,.35);box-shadow:0 12px 30px rgba(0,0,0,.18);}
+.action-kicker{font-size:.64rem;letter-spacing:.15em;color:#71b7ff;text-transform:uppercase;font-weight:800;}
+.action-title{font-weight:800;margin-top:.15rem;font-size:.92rem;}
+.action-meta{color:var(--muted);font-size:.72rem;margin-top:.1rem;}
+.page-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:.1rem 0 .9rem;padding:.55rem .7rem;border:1px solid var(--border);border-radius:13px;background:rgba(9,14,21,.62);}
+.tool-meta{color:var(--muted);font-size:.72rem;}
+.system-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.system-tile{background:linear-gradient(180deg,rgba(14,22,32,.98),rgba(9,14,21,.98));border:1px solid var(--border);border-radius:17px;padding:1rem;position:relative;overflow:hidden;}
+.system-tile:after{content:"";position:absolute;right:-45px;top:-50px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(74,168,255,.11),transparent 68%);pointer-events:none;}
+.system-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;}
+.system-name{font-size:1.05rem;font-weight:850;}
+.system-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.66rem;color:var(--muted);margin-top:.18rem;}
+.system-meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:.9rem 0;}
+.system-meta{padding:.55rem .6rem;border:1px solid var(--border);border-radius:11px;background:rgba(255,255,255,.012);}
+.system-meta-label{color:var(--muted);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;}
+.system-meta-value{font-weight:780;font-size:.86rem;margin-top:.08rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.timeline-line{position:relative;padding-left:1rem;border-left:1px solid rgba(74,168,255,.20);}
+.timeline-dot{position:absolute;left:-4px;top:.55rem;width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 12px rgba(74,168,255,.45);}
+.event-row{padding:.7rem .8rem;margin-bottom:.55rem;border:1px solid var(--border);border-radius:12px;background:rgba(12,18,27,.72);}
+.event-row:hover{border-color:rgba(74,168,255,.28);}
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
+.stat-box{border:1px solid var(--border);border-radius:13px;padding:.7rem .8rem;background:rgba(13,19,27,.72);}
+.stat-box strong{font-size:1.2rem;display:block;margin-top:.1rem;}
+@media (max-width: 1100px){.action-deck,.stat-strip,.system-grid{grid-template-columns:1fr 1fr;}}
+@media (max-width: 700px){.action-deck,.stat-strip,.system-grid{grid-template-columns:1fr;}.system-meta-grid{grid-template-columns:1fr;}}
 
-/* Keep the sidebar collapse / expand control reachable.
-   Streamlit versions may expose either test id. */
-[data-testid="stSidebarCollapsedControl"],
-[data-testid="stSidebarCollapseButton"]{
-  display:flex !important;
-  visibility:visible !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
-  z-index:999999 !important;
-}
-[data-testid="stSidebarCollapsedControl"] button,
-[data-testid="stSidebarCollapseButton"] button{
-  visibility:visible !important;
-  opacity:1 !important;
-  pointer-events:auto !important;
-}
-
-/* Brand */
-.brand-wrap{padding:.35rem 0 1rem;}
-.brand-mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#0f2234,#10263a);border:1px solid rgba(89,215,255,.22);display:inline-flex;align-items:center;justify-content:center;color:var(--cyan);font-weight:900;box-shadow:0 10px 30px rgba(0,0,0,.18);margin-bottom:.7rem;}
-.brand{font-size:1.25rem;font-weight:850;letter-spacing:-.02em;}
-.brand-sub{color:var(--muted);font-size:.74rem;margin-top:.2rem;}
-.side-label{color:#66758b;font-size:.67rem;letter-spacing:.18em;text-transform:uppercase;margin:.35rem 0 .6rem;}
-.side-status{margin:.35rem 0 1rem;padding:.75rem .8rem;border:1px solid var(--line);border-radius:13px;background:rgba(15,22,33,.75);}
-
-/* Page header */
-.page-kicker{color:#6e98bf;font-size:.68rem;font-weight:800;letter-spacing:.20em;text-transform:uppercase;margin-bottom:.45rem;}
-.page-title{font-size:2.35rem;font-weight:850;letter-spacing:-.045em;margin:0;}
-.page-subtitle{color:var(--muted);margin:.35rem 0 1.25rem;line-height:1.8;}
-.header-shell{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem;margin-bottom:.8rem;}
-.command-strip{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.8rem 1rem;border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,rgba(12,18,27,.96),rgba(8,13,20,.96));box-shadow:var(--shadow);margin-bottom:1rem;}
-.command-left{display:flex;align-items:center;gap:.65rem;}
-.command-dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 5px rgba(73,212,155,.08),0 0 16px rgba(73,212,155,.4);}
-.command-name{font-size:.70rem;letter-spacing:.16em;text-transform:uppercase;color:#8090a6;font-weight:800;}
-.command-state{font-weight:750;font-size:.82rem;}
-.command-meta{color:#708096;font-size:.74rem;}
-
-/* Cards */
-.hero-card{background:
- radial-gradient(circle at 86% 15%,rgba(89,215,255,.11),transparent 27%),
- linear-gradient(180deg,rgba(18,28,40,.98),rgba(10,16,24,.98));
-border:1px solid var(--line-strong);border-radius:19px;padding:1.35rem 1.4rem;box-shadow:var(--shadow);}
-.metric-card{position:relative;overflow:hidden;background:linear-gradient(180deg,rgba(17,25,36,.98),rgba(9,14,21,.98));border:1px solid var(--line);border-radius:16px;padding:1rem 1.05rem;min-height:122px;box-shadow:0 12px 30px rgba(0,0,0,.16);}
-.metric-card:before{content:"";position:absolute;inset:0 auto auto 0;width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(89,215,255,.32),transparent);}
-.metric-label{color:#8190a3;font-size:.69rem;letter-spacing:.11em;text-transform:uppercase;}
-.metric-value{font-size:2.15rem;font-weight:850;margin-top:.32rem;letter-spacing:-.04em;}
-.metric-note{color:#68778d;font-size:.72rem;margin-top:.15rem;}
-.metric-accent{position:absolute;top:12px;left:12px;width:7px;height:7px;border-radius:50%;background:var(--blue);box-shadow:0 0 15px rgba(78,166,255,.5);}
-
-.status-pill{display:inline-flex;align-items:center;gap:.35rem;padding:.24rem .58rem;border-radius:999px;border:1px solid var(--line);font-size:.67rem;font-weight:800;white-space:nowrap;}
-.good{background:rgba(73,212,155,.09);color:#88efbf;}
-.warn{background:rgba(240,188,97,.10);color:#f7d18b;}
-.bad{background:rgba(255,110,125,.10);color:#ffa4af;}
-.neutral{background:rgba(148,163,184,.07);color:#c6cfda;}
-.info{background:rgba(78,166,255,.09);color:#a4d4ff;}
-
-.panel{background:rgba(10,16,24,.88);border:1px solid var(--line);border-radius:18px;padding:1rem 1.1rem;box-shadow:0 10px 28px rgba(0,0,0,.14);}
-.panel-title{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:#8290a2;font-weight:800;margin-bottom:.55rem;}
-.panel-title-rtl{font-size:1.08rem;letter-spacing:-.02em;color:#f2f6fb;font-weight:800;margin-bottom:.3rem;}
-.panel-sub{font-size:.72rem;color:#6f7e92;margin-bottom:.8rem;}
-.incident-card{background:linear-gradient(180deg,rgba(14,21,31,.94),rgba(9,14,21,.94));border:1px solid var(--line);border-radius:15px;padding:1rem 1.05rem;margin-bottom:.75rem;box-shadow:0 8px 22px rgba(0,0,0,.12);}
-.incident-critical{border-color:rgba(255,110,125,.32);}
-.incident-high{border-color:rgba(255,110,125,.22);}
-.incident-medium{border-color:rgba(240,188,97,.20);}
-.source-ip{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:800;}
-.mini{font-size:.70rem;color:#708096;letter-spacing:.04em;}
-.alert-banner{border:1px solid rgba(255,110,125,.34);background:linear-gradient(180deg,rgba(68,18,28,.44),rgba(38,13,20,.35));padding:1rem 1.05rem;border-radius:15px;margin-bottom:1rem;box-shadow:0 8px 24px rgba(0,0,0,.12);}
-.timeline-row{padding:.8rem 0;border-bottom:1px solid var(--line);}
-
-/* Inputs / buttons */
-.stButton>button{border-radius:10px;font-weight:780;background:linear-gradient(180deg,#111b27,#0d1621);border:1px solid var(--line-strong);min-height:42px;box-shadow:0 7px 18px rgba(0,0,0,.10);}
-.stButton>button:hover{border-color:rgba(89,215,255,.45);background:linear-gradient(180deg,#132233,#0f1a28);transform:translateY(-1px);}
-.stTextInput input,.stTextArea textarea,.stSelectbox div[data-baseweb="select"] > div{background:#0f1621 !important;border:1px solid var(--line-strong) !important;border-radius:10px !important;color:var(--text) !important;}
-.stTextInput input:focus,.stTextArea textarea:focus{border-color:rgba(89,215,255,.55) !important;box-shadow:0 0 0 1px rgba(89,215,255,.18) !important;}
-label{color:#a8b3c3 !important;font-size:.80rem !important;font-weight:650 !important;}
-
-/* Navigation buttons */
-.nav-note{font-size:.64rem;color:#647389;margin:.2rem 0 .75rem;}
-
-/* Tables / charts */
-[data-testid="stDataFrame"]{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b1119;}
-[data-testid="stMetric"]{background:transparent;}
-.js-plotly-plot{border:1px solid var(--line);border-radius:15px;overflow:hidden;}
-
-/* Responsive */
-@media (max-width:900px){
-  .page-title{font-size:1.8rem;}
-  .block-container{padding-left:1rem;padding-right:1rem;}
-}
+@media (max-width: 900px){.hero-grid{grid-template-columns:1fr;}}
 </style>
 """,
     unsafe_allow_html=True,
@@ -525,57 +505,101 @@ def agent_is_online(system):
         return False
 
 
-def login():
+PAGES = [
+    "Overview", "Systems", "Add System", "Security",
+    "Incidents", "Analytics", "Events", "Agent Setup"
+]
+PAGE_LABELS = {
+    "Overview": "مركز المراقبة",
+    "Systems": "المنظومات",
+    "Add System": "إضافة منظومة",
+    "Security": "المراقبة الأمنية",
+    "Incidents": "الحوادث الأمنية",
+    "Analytics": "التحليلات",
+    "Events": "سجل الأحداث",
+    "Agent Setup": "إعداد الحساس",
+}
+
+def render_command_nav():
+    current = st.session_state.get("page", "Overview")
     st.markdown(
-        '<div class="hero-card">'
-        '<div class="page-kicker">SECURITY OPERATIONS PLATFORM</div>'
-        '<div class="page-title">GuardianEye</div>'
-        '<div class="page-subtitle">مركز موحد لمراقبة صحة المنظومات، استقبال بيانات الحساس، اكتشاف الأنماط الأمنية، وإدارة الحوادث.</div>'
-        '</div>',
+        f'<div class="command-rail"><div class="command-rail-title"><span><strong>GUARDIANEYE CONTROL</strong></span><span>{safe_text(PAGE_LABELS.get(current, current))}</span></div></div>',
         unsafe_allow_html=True,
     )
-    st.write("")
-    left, right = st.columns([1.15, .85], gap="large")
-    with left:
-        command_strip("GUARDIANEYE CORE", "Protected access", "Central security monitoring")
-        st.markdown(
-            '<div class="panel">'
-            '<div class="panel-title">Operational visibility</div>'
-            '<div class="panel-title-rtl">رؤية موحدة للبيئة</div>'
-            '<div class="panel-sub">متابعة الصحة التشغيلية والأمنية في مساحة عمل واحدة، مع فصل واضح بين البيانات التشغيلية والأحداث الأمنية.</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.write("")
-        cols = st.columns(3)
-        blocks = [
-            ("01", "الصحة التشغيلية", "التوفر وزمن الاستجابة."),
-            ("02", "Security telemetry", "الأحداث القادمة من الحساس."),
-            ("03", "Incident response", "الأدلة والمتابعة والتقارير."),
-        ]
-        for col, (num, title, note) in zip(cols, blocks):
+    for row_idx, group in enumerate((PAGES[:4], PAGES[4:])):
+        cols = st.columns(4, gap="small")
+        for col, page_name in zip(cols, group):
+            label = ("● " if page_name == current else "") + PAGE_LABELS[page_name]
             with col:
-                st.markdown(
-                    f'<div class="incident-card"><div class="mini">{num}</div>'
-                    f'<strong>{title}</strong><br><span class="small-muted">{note}</span></div>',
-                    unsafe_allow_html=True,
-                )
+                if st.button(label, key=f"topnav_{row_idx}_{page_name}", use_container_width=True):
+                    st.session_state.page = page_name
+                    st.rerun()
+
+def render_back_button(key_suffix):
+    if st.button("← العودة إلى مركز المراقبة", key=f"back_{key_suffix}"):
+        st.session_state.page = "Overview"
+        st.rerun()
+
+def render_section_heading(kicker, title, subtitle):
+    st.markdown(f'<div class="section-kicker">{safe_text(kicker)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="page-title">{safe_text(title)}</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="page-subtitle">{safe_text(subtitle)}</div>', unsafe_allow_html=True)
+
+def render_posture(systems, incidents, security_events):
+    open_incidents = [i for i in incidents if i.get("status") == "Open"]
+    high_open = sum(1 for i in open_incidents if (i.get("severity") or "").lower() in {"high", "critical"})
+    healthy = sum(1 for s in systems if s.get("status") == "Healthy")
+    online = sum(1 for s in systems if agent_is_online(s))
+    posture = "STABLE" if not high_open else "ATTENTION"
+    dot = "" if not high_open else ("bad" if high_open > 1 else "warn")
+    st.markdown(
+        f'''<div class="hero-grid">
+        <div class="hero-panel">
+          <div class="section-kicker">SECURITY POSTURE</div>
+          <div class="hero-title">صورة تشغيلية وأمنية موحدة</div>
+          <div class="hero-copy">طبقة واحدة لربط صحة الخدمات، حالة الحساسات، والأحداث الأمنية. الهدف هو الانتقال السريع من المؤشر إلى الحدث ثم إلى الحادث والأدلة.</div>
+          <div style="display:flex;gap:2.2rem;align-items:flex-end;margin-top:1rem;">
+            <div><div class="hero-value">{healthy}</div><div class="hero-label">خدمات سليمة</div></div>
+            <div><div class="hero-value">{online}</div><div class="hero-label">حساسات نشطة</div></div>
+            <div><div class="hero-value">{len(open_incidents)}</div><div class="hero-label">حوادث مفتوحة</div></div>
+          </div>
+        </div>
+        <div class="hero-panel">
+          <div class="section-kicker">LIVE SIGNAL</div>
+          <div class="signal-row"><span><span class="signal-dot {dot}"></span><span class="signal-name">{posture}</span></span><strong>{high_open}</strong></div>
+          <div class="signal-row"><span><span class="signal-name">أحداث أمنية</span><div class="signal-meta">المجموعة الحالية</div></span><strong>{len(security_events)}</strong></div>
+          <div class="signal-row"><span><span class="signal-name">مصادر مرصودة</span><div class="signal-meta">عناوين المصدر الفريدة</div></span><strong>{len({e.get("source_ip") for e in security_events if e.get("source_ip")})}</strong></div>
+          <div class="signal-row"><span><span class="signal-name">حالة الأنظمة</span><div class="signal-meta">Healthy / Slow / Down</div></span><strong>{healthy}/{len(systems)}</strong></div>
+        </div></div>''',
+        unsafe_allow_html=True,
+    )
+
+def login():
+    st.markdown('<div class="brand">GUARDIANEYE · SECURITY OPERATIONS</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">مركز مراقبة أمني وتشغيلي للأنظمة المصرح بها</div>', unsafe_allow_html=True)
+    left, right = st.columns([1.05, .95], gap="large")
+    with left:
+        st.markdown("### مراقبة من مكان واحد")
+        st.write("راقب صحة الخدمات، استقبال المعلومات من الحساس الموجود داخل المنظومة، اكتشاف السلوك الهجومي، وإدارة الحوادث والتقارير.")
+        st.markdown("""
+        <div class="incident-card">
+          <div class="mini">01</div><strong>صحة المنظومة</strong><br><span class="small-muted">التوفر وزمن الاستجابة</span>
+        </div>
+        <div class="incident-card">
+          <div class="mini">02</div><strong>المراقبة الأمنية</strong><br><span class="small-muted">أحداث من داخل المنظومة وعناوين المصادر</span>
+        </div>
+        <div class="incident-card">
+          <div class="mini">03</div><strong>الحوادث والتقارير</strong><br><span class="small-muted">تنبيه، تفاصيل، أدلة، وتقرير للمختصين</span>
+        </div>
+        """, unsafe_allow_html=True)
     with right:
-        st.markdown(
-            '<div class="hero-card">'
-            '<div class="page-kicker">CONTROL CENTER</div>'
-            '<div class="page-title" style="font-size:1.85rem">تسجيل الدخول</div>'
-            '</div>',
-            unsafe_allow_html=True,
-        )
-        st.write("")
+        st.markdown("### تسجيل الدخول")
         username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
         password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
         if st.button("دخول إلى مركز المراقبة", use_container_width=True):
             if username == ADMIN_USER and password == ADMIN_PASSWORD:
                 st.session_state.logged_in = True
                 st.session_state.pop("login_password", None)
-                st.session_state.page = "Overview"
                 st.rerun()
             else:
                 st.error("بيانات الدخول غير صحيحة.")
@@ -588,55 +612,60 @@ def logout():
     st.rerun()
 
 
-def go_to(page_name):
+def metric_card(label, value, note):
+    return f'<div class="metric-card"><div class="metric-label">{safe_text(label)}</div><div class="metric-value">{safe_text(value)}</div><div class="metric-note">{safe_text(note)}</div></div>'
+
+
+def navigate(page_name):
     st.session_state.page = page_name
     st.rerun()
 
 
-def page_header(kicker, title, subtitle, back=True):
+def render_live_topline():
+    now = dt.datetime.now().strftime("%H:%M:%S")
     st.markdown(
-        f'<div class="header-shell">'
-        f'<div><div class="page-kicker">{safe_text(kicker)}</div>'
-        f'<div class="page-title">{safe_text(title)}</div>'
-        f'<div class="page-subtitle">{safe_text(subtitle)}</div></div>'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-    if back:
-        left, right = st.columns([7, 1])
-        with right:
-            if st.button("← مركز المراقبة", key=f"back_{title}", use_container_width=True):
-                go_to("Overview")
-
-
-def command_strip(label="GUARDIANEYE CORE", state="Live monitoring", meta="Agent window · 90s  |  Refresh · 10s"):
-    st.markdown(
-        f'<div class="command-strip">'
-        f'<div class="command-left"><span class="command-dot"></span>'
-        f'<span class="command-name">{safe_text(label)}</span>'
-        f'<span class="command-state">{safe_text(state)}</span></div>'
-        f'<div class="command-meta">{safe_text(meta)}</div>'
-        f'</div>',
+        f'<div class="app-topline"><span><span class="pulse"></span>&nbsp; GuardianEye Core · Monitoring fabric</span>'
+        f'<span class="topline-right">LIVE · {now} · refresh 10s</span></div>',
         unsafe_allow_html=True,
     )
 
 
-def panel_heading(title, subtitle=None):
-    html = f'<div class="panel-title-rtl">{safe_text(title)}</div>'
-    if subtitle:
-        html += f'<div class="panel-sub">{safe_text(subtitle)}</div>'
-    st.markdown(html, unsafe_allow_html=True)
+def render_action_deck():
+    actions = [
+        ("01", "إضافة منظومة", "تسجيل نظام جديد", "Add System"),
+        ("02", "المراقبة الأمنية", "الأحداث والإنذارات", "Security"),
+        ("03", "إدارة الحوادث", "الحوادث المفتوحة", "Incidents"),
+        ("04", "الحساسات", "حالة الـAgent والـHeartbeat", "Agent Setup"),
+    ]
+    cols = st.columns(4, gap="small")
+    for col, (num, title, meta, target) in zip(cols, actions):
+        with col:
+            st.markdown(
+                f'<div class="action-card"><div class="action-kicker">{num} · CONTROL</div>'
+                f'<div class="action-title">{safe_text(title)}</div><div class="action-meta">{safe_text(meta)}</div></div>',
+                unsafe_allow_html=True,
+            )
+            if st.button("فتح", key=f"action_{target}", use_container_width=True):
+                navigate(target)
 
 
-def metric_card(label, value, note):
-    return (
-        f'<div class="metric-card">'
-        f'<span class="metric-accent"></span>'
-        f'<div class="metric-label">{safe_text(label)}</div>'
-        f'<div class="metric-value">{safe_text(value)}</div>'
-        f'<div class="metric-note">{safe_text(note)}</div>'
-        f'</div>'
+def render_page_tools(left_text, right_text):
+    st.markdown(
+        f'<div class="page-tools"><span class="tool-meta">{safe_text(left_text)}</span>'
+        f'<span class="tool-meta">{safe_text(right_text)}</span></div>',
+        unsafe_allow_html=True,
     )
+
+
+def render_stat_strip(items):
+    html_parts = ['<div class="stat-strip">']
+    for label, value, note in items:
+        html_parts.append(
+            f'<div class="stat-box"><div class="metric-label">{safe_text(label)}</div>'
+            f'<strong>{safe_text(value)}</strong><div class="metric-note">{safe_text(note)}</div></div>'
+        )
+    html_parts.append('</div>')
+    st.markdown("".join(html_parts), unsafe_allow_html=True)
 
 
 def overview_page():
@@ -650,8 +679,12 @@ def overview_page():
     online_agents = sum(1 for s in systems if agent_is_online(s))
     healthy = sum(1 for s in systems if s.get("status") == "Healthy")
 
-    st.markdown('<div class="page-kicker">COMMAND CENTER</div><div class="page-title">مركز المراقبة</div><div class="page-subtitle">الرؤية التشغيلية والأمنية للمنظومات المسجلة في الوقت الحالي.</div>', unsafe_allow_html=True)
-    command_strip("GUARDIANEYE CORE", "Live monitoring", f"{len(systems)} systems  ·  {online_agents} agents online  ·  refresh 10s")
+    render_section_heading("COMMAND CENTER", "مركز المراقبة", "الرؤية التشغيلية والأمنية للمنظومات المسجلة في الوقت الحالي.")
+    render_live_topline()
+    render_command_nav()
+    render_action_deck()
+    render_posture(systems, incidents, security_events)
+    render_page_tools("Live operational picture", f"{len(systems)} systems · {online_agents} agents online · {len(open_incidents)} open incidents")
 
     cols = st.columns(5)
     metrics = [
@@ -668,21 +701,6 @@ def overview_page():
     if open_incidents:
         st.markdown('<div class="alert-banner"><strong>تنبيه أمني:</strong> توجد حوادث أمنية مفتوحة على منظومات مراقبة.</div>', unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="hero-card">'
-        '<div class="page-kicker">SECURITY POSTURE</div>'
-        '<div class="page-title" style="font-size:1.45rem">صورة تشغيلية موحدة</div>'
-        '<div class="page-subtitle" style="margin-bottom:.6rem">يجمع GuardianEye صحة الخدمات مع حالة الحساس والأحداث الأمنية في مساحة واحدة، مع تركيز على المتابعة السريعة والقرائن.</div>'
-        f'<div style="display:flex;gap:1.25rem;flex-wrap:wrap;color:#9aabbe;font-size:.76rem">'
-        f'<span>Healthy <strong style="color:#f2f6fb">{healthy}</strong></span>'
-        f'<span>Slow <strong style="color:#f2f6fb">{sum(1 for s in systems if s.get("status") == "Slow")}</strong></span>'
-        f'<span>Agents online <strong style="color:#f2f6fb">{online_agents}</strong></span>'
-        f'<span>Open incidents <strong style="color:#f2f6fb">{len(open_incidents)}</strong></span>'
-        f'<span>High/Critical <strong style="color:#f2f6fb">{sum(1 for i in open_incidents if i.get("severity") in ("High", "Critical"))}</strong></span>'
-        '</div></div>',
-        unsafe_allow_html=True,
-    )
-    st.write("")
     st.markdown("### حالة المنظومات")
     rows = []
     for s in systems:
@@ -717,77 +735,117 @@ def overview_page():
 def systems_page():
     run_health_monitoring()
     systems = load_systems()
-    page_header("SYSTEMS", "المنظومات", "الصحة التشغيلية وحالة الحساس الأمني لكل منظومة.")
-    command_strip("SYSTEM REGISTRY", "Live inventory", f"{len(systems)} monitored systems")
+    render_section_heading("SYSTEMS", "المنظومات", "لوحة موحدة لصحة الخدمات والحساسات والحالة التشغيلية.")
+    render_command_nav()
+    render_back_button("systems")
+
     if not systems:
-        st.info("لا توجد منظومات. استخدم صفحة «إضافة منظومة». )")
+        render_page_tools("No systems registered", "Onboarding is one click away")
+        st.info("لا توجد منظومات بعد. افتح «إضافة منظومة» لبدء التسجيل.")
+        if st.button("＋ إضافة منظومة", use_container_width=True):
+            navigate("Add System")
         return
 
-    for system in systems:
-        system_id = system["id"]
-        company = system.get("company", "Unknown")
-        status = system.get("status", "Not Checked")
-        online = agent_is_online(system)
-        with st.container(border=True):
-            top_left, top_right = st.columns([3, 1])
-            with top_left:
-                st.markdown(f"### {safe_text(company)}", unsafe_allow_html=True)
-                st.caption(f"ID: {short_id(system_id)}")
-            with top_right:
-                st.markdown(status_badge(status), unsafe_allow_html=True)
-                st.markdown(status_badge("Online" if online else "Offline"), unsafe_allow_html=True)
-            a, b, c = st.columns(3)
-            with a:
-                st.write(f"**الرابط:** {system.get('url') or '—'}")
-                st.write(f"**واجهة الفحص:** {system.get('api_url') or '—'}")
-            with b:
-                st.write(f"**HTTP:** {system.get('http_status') or '—'}")
-                st.write(f"**الاستجابة:** {response_ms_text(system.get('response_ms'))}")
-            with c:
-                st.write(f"**آخر فحص:** {system.get('last_checked') or '—'}")
-                st.write(f"**آخر إرسال للحساس:** {system.get('agent_last_seen') or '—'}")
-            check_col, delete_col = st.columns(2)
-            with check_col:
-                if st.button("فحص الآن", key=f"check_{system_id}", use_container_width=True):
-                    result = check_system(system)
-                    old = system.get("status", "Not Checked")
-                    system.update({
-                        "status": result["status"], "http_status": result["http_status"],
-                        "response_ms": result["response_ms"], "last_message": result["message"],
-                        "last_checked": iso_now(),
-                    })
-                    if old != "Not Checked" and old != result["status"]:
-                        try:
-                            create_event(system, old, result["status"], result["message"])
-                        except Exception:
-                            pass
-                    update_system(system)
-                    st.success("تم الفحص وتحديث النتيجة.")
-                    st.rerun()
-            with delete_col:
-                key = f"confirm_delete_{system_id}"
-                if not st.session_state.get(key):
-                    if st.button("حذف نهائي", key=f"delete_{system_id}", use_container_width=True):
-                        st.session_state[key] = True
+    healthy_count = sum(1 for s in systems if s.get("status") == "Healthy")
+    online_count = sum(1 for s in systems if agent_is_online(s))
+    down_count = sum(1 for s in systems if s.get("status") == "Down")
+    render_stat_strip([
+        ("المنظومات", len(systems), "مسجلة"),
+        ("Healthy", healthy_count, "استجابة طبيعية"),
+        ("Agents online", online_count, "آخر 90 ثانية"),
+        ("Down", down_count, "تحتاج تحقق"),
+    ])
+
+    search = st.text_input("بحث سريع", placeholder="اسم المنظومة أو System ID…", key="systems_search")
+    status_filter = st.selectbox("تصفية الحالة", ["الكل", "Healthy", "Slow", "Down", "Not Checked"], key="systems_status")
+    filtered = []
+    needle = search.strip().lower()
+    for s in systems:
+        haystack = f"{s.get('company','')} {s.get('id','')}".lower()
+        if needle and needle not in haystack:
+            continue
+        if status_filter != "الكل" and s.get("status") != status_filter:
+            continue
+        filtered.append(s)
+
+    render_page_tools(f"Showing {len(filtered)} of {len(systems)} systems", "Select an action inside a system tile")
+
+    for idx in range(0, len(filtered), 2):
+        row = filtered[idx:idx+2]
+        cols = st.columns(2, gap="small")
+        for col, system in zip(cols, row):
+            system_id = system["id"]
+            company = system.get("company", "Unknown")
+            status = system.get("status", "Not Checked")
+            online = agent_is_online(system)
+            with col:
+                st.markdown('<div class="system-tile">', unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="system-head"><div><div class="system-name">{safe_text(company)}</div>'
+                    f'<div class="system-id">{safe_text(system_id)}</div></div>'
+                    f'<div>{status_badge(status)} {status_badge("Online" if online else "Offline")}</div></div>',
+                    unsafe_allow_html=True,
+                )
+                st.markdown(
+                    '<div class="system-meta-grid">'
+                    f'<div class="system-meta"><div class="system-meta-label">HTTP</div><div class="system-meta-value">{safe_text(system.get("http_status") or "—")}</div></div>'
+                    f'<div class="system-meta"><div class="system-meta-label">Response</div><div class="system-meta-value">{safe_text(response_ms_text(system.get("response_ms")))}</div></div>'
+                    f'<div class="system-meta"><div class="system-meta-label">Agent</div><div class="system-meta-value">{("Online" if online else "Offline")}</div></div>'
+                    '</div>',
+                    unsafe_allow_html=True,
+                )
+                st.caption(f"الرابط: {system.get('url') or '—'}")
+                a, b, c = st.columns(3, gap="small")
+                with a:
+                    if st.button("فحص", key=f"check_{system_id}", use_container_width=True):
+                        result = check_system(system)
+                        old = system.get("status", "Not Checked")
+                        system.update({"status": result["status"], "http_status": result["http_status"], "response_ms": result["response_ms"], "last_message": result["message"], "last_checked": iso_now()})
+                        if old != "Not Checked" and old != result["status"]:
+                            try:
+                                create_event(system, old, result["status"], result["message"])
+                            except Exception:
+                                pass
+                        update_system(system)
                         st.rerun()
-                else:
-                    st.warning("هذا سيحذف المنظومة والأحداث الأمنية والحوادث وسجلات الحساس نهائيًا.")
-                    y, n = st.columns(2)
-                    with y:
-                        if st.button("تأكيد الحذف", key=f"confirm_yes_{system_id}", use_container_width=True):
-                            permanently_delete_system(system_id)
-                            st.session_state.pop(key, None)
-                            st.success("تم الحذف النهائي.")
-                            st.rerun()
-                    with n:
-                        if st.button("إلغاء", key=f"confirm_no_{system_id}", use_container_width=True):
-                            st.session_state.pop(key, None)
-                            st.rerun()
+                with b:
+                    if st.button("الأمن", key=f"sec_{system_id}", use_container_width=True):
+                        st.session_state.selected_system_id = system_id
+                        navigate("Security")
+                with c:
+                    if st.button("الحساس", key=f"agent_{system_id}", use_container_width=True):
+                        st.session_state.selected_system_id = system_id
+                        navigate("Agent Setup")
+                with st.expander("التفاصيل التشغيلية", expanded=False):
+                    st.write(f"**واجهة الفحص:** {system.get('api_url') or '—'}")
+                    st.write(f"**آخر فحص:** {system.get('last_checked') or '—'}")
+                    st.write(f"**آخر heartbeat:** {system.get('agent_last_seen') or '—'}")
+                    st.write(f"**آخر رسالة:** {system.get('last_message') or '—'}")
+                    if st.button("حذف نهائي", key=f"delete_{system_id}", use_container_width=True):
+                        st.session_state[f"confirm_delete_{system_id}"] = True
+                    if st.session_state.get(f"confirm_delete_{system_id}"):
+                        st.warning("سيتم حذف المنظومة والأحداث والحوادث وسجلات الحساس نهائيًا.")
+                        y, n = st.columns(2)
+                        with y:
+                            if st.button("تأكيد", key=f"confirm_yes_{system_id}", use_container_width=True):
+                                permanently_delete_system(system_id)
+                                st.session_state.pop(f"confirm_delete_{system_id}", None)
+                                st.rerun()
+                        with n:
+                            if st.button("إلغاء", key=f"confirm_no_{system_id}", use_container_width=True):
+                                st.session_state.pop(f"confirm_delete_{system_id}", None)
+                                st.rerun()
+                st.markdown('</div>', unsafe_allow_html=True)
+
+    if not filtered:
+        st.info("لا توجد نتائج مطابقة للفلاتر الحالية.")
 
 
 def add_system_page():
-    page_header("ONBOARDING", "إضافة منظومة", "تسجيل منظومة وإصدار هوية خاصة للحساس الموجود داخلها.")
-    command_strip("ONBOARDING", "Ready to provision", "System ID + Ingest Token")
+    render_section_heading("ONBOARDING", "إضافة منظومة", "تسجيل منظومة وإصدار بيانات الحساس الخاصة بها.")
+    render_command_nav()
+    render_back_button("add")
+    st.markdown('<div class="page-subtitle">تسجيل منظومة ثم إصدار رمز خاص للحساس الموجود داخلها</div>', unsafe_allow_html=True)
 
     with st.form("add_system_form", clear_on_submit=True):
         company = st.text_input("اسم الشركة / المؤسسة", placeholder="Example Company")
@@ -830,8 +888,11 @@ def security_page():
     incidents = load_incidents(200)
     systems = {s["id"]: s for s in load_systems()}
 
-    page_header("SECURITY", "المراقبة الأمنية", "الأحداث القادمة من الحساس وتحويلها إلى إشارات قابلة للمتابعة.")
-    command_strip("SECURITY TELEMETRY", "Live feed", f"{len(events)} events loaded")
+    render_section_heading("SECURITY", "المراقبة الأمنية", "الأحداث القادمة من الحساس وتحليلها إلى حوادث.")
+    render_command_nav()
+    render_back_button("security")
+    render_page_tools("Detection pipeline", "Rules-based security events from the monitored environment")
+    st.markdown('<div class="page-subtitle">الأحداث القادمة من الحساس وتحليلها إلى حوادث</div>', unsafe_allow_html=True)
 
     a, b, c, d = st.columns(4)
     with a: st.markdown(metric_card("أحداث أمنية", len(events), "آخر 500 حدث"), unsafe_allow_html=True)
@@ -854,27 +915,35 @@ def security_page():
     if not events:
         st.info("لا توجد أحداث أمنية بعد.")
         return
-    rows = []
+    severities = ["الكل", "Critical", "High", "Medium", "Low", "Info"]
+    sev_filter = st.selectbox("مستوى الخطورة", severities, key="security_severity_filter")
+    ip_filter = st.text_input("تصفية المصدر", placeholder="Source IP…", key="security_ip_filter").strip().lower()
+    visible = []
     for e in events:
-        rows.append({
-            "الوقت": e.get("event_time"),
-            "المنظومة": systems.get(e.get("system_id"), {}).get("company", short_id(e.get("system_id"))),
-            "نوع الحادث": e.get("attack_type") or e.get("event_type"),
-            "الخطورة": e.get("severity"),
-            "عنوان المصدر": e.get("source_ip") or "—",
-            "الثقة": f"{float(e.get('confidence') or 0)*100:.0f}%",
-            "الحالة": e.get("status") or "Open",
-        })
-    st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        if sev_filter != "الكل" and e.get("severity") != sev_filter:
+            continue
+        ip = str(e.get("source_ip") or "").lower()
+        if ip_filter and ip_filter not in ip:
+            continue
+        visible.append(e)
+    render_page_tools(f"Showing {len(visible)} security events", "Open an event row for context")
+    for idx, e in enumerate(visible[:30]):
+        with st.expander(f"{e.get('attack_type') or e.get('event_type')} · {e.get('severity') or 'Info'} · {e.get('source_ip') or 'Unknown'}", expanded=False):
+            st.markdown(
+                f'<div class="event-row"><strong>الوقت:</strong> {safe_text(e.get("event_time"))}<br>'
+                f'<strong>المنظومة:</strong> {safe_text(systems.get(e.get("system_id"), {}).get("company", short_id(e.get("system_id"))))}<br>'
+                f'<strong>الدليل:</strong> {safe_text(e.get("evidence") or "—")}</div>',
+                unsafe_allow_html=True,
+            )
 
 
 def incidents_page():
     incidents = load_incidents(300)
+    render_section_heading("CASE MANAGEMENT", "الحوادث الأمنية", "تجميع الأحداث والأدلة ومتابعة حالة كل حادث.")
+    render_command_nav()
+    render_back_button("incidents")
     systems = {s["id"]: s for s in load_systems()}
     events = load_security_events(1000)
-
-    page_header("INCIDENT RESPONSE", "الحوادث الأمنية", "كل حادث يجمع النوع والمصدر والتوقيت والأدلة والأحداث المرتبطة.")
-    command_strip("INCIDENT QUEUE", "Analyst workspace", f"{len(incidents)} incidents")
 
     if not incidents:
         st.info("لا توجد حوادث بعد. يمكنك استخدام «إنشاء تنبيه تجريبي» في صفحة المراقبة الأمنية.")
@@ -884,10 +953,18 @@ def incidents_page():
     if open_incidents:
         st.markdown('<div class="alert-banner"><strong>تنبيه:</strong> توجد حوادث مفتوحة تحتاج مراجعة.</div>', unsafe_allow_html=True)
 
+    status_filter = st.selectbox("الحالة", ["الكل", "Open", "Resolved"], key="incident_status_filter")
+    severity_filter = st.selectbox("الخطورة", ["الكل", "Critical", "High", "Medium", "Low", "Info"], key="incident_severity_filter")
+    filtered_incidents = [i for i in incidents if (status_filter == "الكل" or i.get("status") == status_filter) and (severity_filter == "الكل" or i.get("severity") == severity_filter)]
+    if not filtered_incidents:
+        st.info("لا توجد حوادث مطابقة للفلاتر الحالية.")
+        return
+    render_page_tools(f"Showing {len(filtered_incidents)} incidents", "Case management")
     selected_id = st.selectbox(
         "اختر حادثًا",
-        [i["id"] for i in incidents],
-        format_func=lambda iid: next((f"{i.get('title')} · {i.get('severity')} · {short_id(iid)}" for i in incidents if i["id"] == iid), short_id(iid)),
+        [i["id"] for i in filtered_incidents],
+        format_func=lambda iid: next((f"{i.get('title')} · {i.get('severity')} · {short_id(iid)}" for i in filtered_incidents if i["id"] == iid), short_id(iid)),
+        key="incident_selector",
     )
     incident = next(i for i in incidents if i["id"] == selected_id)
     system = systems.get(incident.get("system_id"), {})
@@ -908,24 +985,27 @@ def incidents_page():
     with c: st.markdown(metric_card("الأحداث", incident.get("event_count", 0), "مرتبطة بهذا الحادث"), unsafe_allow_html=True)
     with d: st.markdown(metric_card("الحالة", incident.get("status", "Open"), "المتابعة الحالية"), unsafe_allow_html=True)
 
-    st.markdown("### تفاصيل الحادث")
-    st.write(f"**المنظومة:** {system.get('company', 'Unknown')}")
-    st.write(f"**أول ظهور:** {incident.get('first_seen') or '—'}")
-    st.write(f"**آخر ظهور:** {incident.get('last_seen') or '—'}")
-    st.write(f"**الملخص:** {incident.get('evidence_summary') or '—'}")
-
-    st.markdown("### الأدلة والأحداث المرتبطة")
-    if not related:
-        st.info("لا توجد أحداث مرتبطة متاحة.")
-    else:
-        for e in related:
-            st.markdown(
-                f'<div class="timeline-row"><strong>{safe_text(e.get("event_time"))}</strong> · '
-                f'{severity_badge(e.get("severity") or "Medium")} · '
-                f'<span class="source-ip">{safe_text(e.get("source_ip") or "Unknown")}</span><br>'
-                f'{safe_text(e.get("evidence") or "No evidence text")}</div>',
-                unsafe_allow_html=True,
-            )
+    tabs = st.tabs(["ملخص", "Timeline", "الأدلة"])
+    with tabs[0]:
+        st.write(f"**المنظومة:** {system.get('company', 'Unknown')}")
+        st.write(f"**أول ظهور:** {incident.get('first_seen') or '—'}")
+        st.write(f"**آخر ظهور:** {incident.get('last_seen') or '—'}")
+        st.write(f"**عدد الأحداث:** {incident.get('event_count', 0)}")
+        st.write(f"**الملخص:** {incident.get('evidence_summary') or '—'}")
+    with tabs[1]:
+        if not related:
+            st.info("لا توجد أحداث مرتبطة متاحة.")
+        else:
+            for e in related:
+                st.markdown(
+                    f'<div class="timeline-line"><span class="timeline-dot"></span><strong>{safe_text(e.get("event_time"))}</strong> · '
+                    f'{severity_badge(e.get("severity") or "Medium")} · '
+                    f'<span class="source-ip">{safe_text(e.get("source_ip") or "Unknown")}</span><br>'
+                    f'{safe_text(e.get("evidence") or "No evidence text")}</div><br>',
+                    unsafe_allow_html=True,
+                )
+    with tabs[2]:
+        st.code(str(incident.get("evidence_summary") or "No evidence summary available."))
 
     r1, r2 = st.columns(2)
     with r1:
@@ -976,10 +1056,11 @@ def build_incident_report(incident, system, events):
 
 def analytics_page():
     incidents = load_incidents(500)
+    render_section_heading("ANALYTICS", "التحليلات", "مؤشرات الصحة والأحداث الأمنية واتجاهات الحوادث.")
+    render_command_nav()
+    render_back_button("analytics")
     events = load_security_events(1000)
     systems = load_systems()
-    page_header("ANALYTICS", "التحليلات", "مؤشرات الصحة التشغيلية واتجاهات الأحداث والحوادث.")
-    command_strip("ANALYTICS", "Live snapshot", "Current telemetry")
     if systems:
         health_df = pd.DataFrame([{
             "company": s.get("company", "Unknown"),
@@ -1011,17 +1092,27 @@ def analytics_page():
         else:
             st.info("لا توجد عناوين مصدر لعرضها.")
 
+    render_stat_strip([
+        ("Security events", len(events), "آخر 1000 حدث"),
+        ("Incidents", len(incidents), "آخر 500 حادث"),
+        ("Unique sources", len({e.get('source_ip') for e in events if e.get('source_ip')}), "مصادر فريدة"),
+        ("Online agents", sum(agent_is_online(s) for s in systems), "آخر 90 ثانية"),
+    ])
     if incidents:
-        sev = Counter(i.get("severity") for i in incidents)
-        st.markdown("### ملخص الخطورة")
-        st.dataframe(pd.DataFrame([{"الخطورة": k, "العدد": v} for k, v in sev.items()]), use_container_width=True, hide_index=True)
+        sev = Counter(i.get("severity") or "Unknown" for i in incidents)
+        st.markdown("### توزيع الخطورة")
+        sev_df = pd.DataFrame([{"severity": k, "count": v} for k, v in sev.items()])
+        fig = px.bar(sev_df, x="severity", y="count", title="توزيع الحوادث حسب الخطورة")
+        fig.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+        st.plotly_chart(fig, use_container_width=True)
 
 
 def events_page():
     events = load_events(500)
+    render_section_heading("EVENT STREAM", "سجل الأحداث", "سجل مركزي للتغيرات التشغيلية والأحداث الأمنية.")
+    render_command_nav()
+    render_back_button("events")
     security = load_security_events(500)
-    page_header("EVENT STREAM", "سجل الأحداث", "التغيّرات التشغيلية والأحداث الأمنية المسجلة.")
-    command_strip("EVENT STREAM", "Historical view", f"{len(events) + len(security)} records")
 
     st.markdown("### أحداث تشغيلية")
     if events:
@@ -1031,6 +1122,7 @@ def events_page():
 
     st.markdown("### أحداث أمنية")
     if security:
+        sev_filter = st.selectbox("الخطورة", ["الكل", "Critical", "High", "Medium", "Low", "Info"], key="events_severity_filter")
         rows = [{
             "الوقت": e.get("event_time"),
             "النوع": e.get("attack_type") or e.get("event_type"),
@@ -1039,25 +1131,38 @@ def events_page():
             "البروتوكول": e.get("protocol"),
             "الحالة": e.get("status"),
             "اكتشف بواسطة": e.get("detected_by"),
-        } for e in security]
-        st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+        } for e in security if sev_filter == "الكل" or e.get("severity") == sev_filter]
+        df = pd.DataFrame(rows)
+        if not df.empty:
+            st.dataframe(df, use_container_width=True, hide_index=True)
+            st.download_button("تصدير CSV", df.to_csv(index=False).encode("utf-8-sig"), "GuardianEye_events.csv", "text/csv", use_container_width=True)
+        else:
+            st.info("لا توجد أحداث مطابقة.")
     else:
         st.info("لا توجد أحداث أمنية.")
 
 
 def agent_setup_page():
     systems = load_systems()
-    page_header("AGENT CONTROL", "إعداد الحساس", "تجهيز الحساس وربطه بالمنظومة عبر هوية ورمز استقبال مخصصين.")
-    command_strip("AGENT CONTROL", "Provisioning", "Per-system identity")
+    render_section_heading("SENSOR CONTROL", "إعداد الحساس", "متابعة هوية الحساسات والـheartbeat لكل منظومة.")
+    render_command_nav()
+    render_back_button("agent")
     st.info("الحساس هو الجزء الذي يجمع المعلومات من داخل المنظومة. الموقع وحده لا يرى كل ما يحدث داخل الخادم.")
-    st.markdown("### لكل منظومة")
-    for s in systems:
+    render_page_tools("Sensor fleet", f"{sum(agent_is_online(s) for s in systems)} online · {len(systems)} total")
+    st.markdown("### حالة الحساسات")
+    selected = st.session_state.get("selected_system_id")
+    ordered = sorted(systems, key=lambda x: 0 if x.get("id") == selected else 1)
+    for s in ordered:
         online = agent_is_online(s)
+        is_selected = s.get("id") == selected
+        label = "مختارة" if is_selected else ""
         st.markdown(
-            f'<div class="incident-card"><strong>{safe_text(s.get("company"))}</strong> '
-            f'{status_badge("Online" if online else "Offline")}<br>'
-            f'<span class="small-muted">System ID: {safe_text(s.get("id"))}</span><br>'
-            f'آخر إرسال: {safe_text(s.get("agent_last_seen") or "—")}</div>',
+            f'<div class="system-tile"><div class="system-head"><div><div class="system-name">{safe_text(s.get("company"))}</div>'
+            f'<div class="system-id">{safe_text(s.get("id"))}</div></div>'
+            f'<div>{status_badge("Online" if online else "Offline")} {safe_text(label)}</div></div>'
+            f'<div class="system-meta-grid"><div class="system-meta"><div class="system-meta-label">Hostname</div><div class="system-meta-value">—</div></div>'
+            f'<div class="system-meta"><div class="system-meta-label">Agent</div><div class="system-meta-value">{("Online" if online else "Offline")}</div></div>'
+            f'<div class="system-meta"><div class="system-meta-label">Last seen</div><div class="system-meta-value">{safe_text(s.get("agent_last_seen") or "—")}</div></div></div></div>',
             unsafe_allow_html=True,
         )
     st.markdown("### شكل الإعداد")
@@ -1084,42 +1189,20 @@ if not st.session_state.logged_in:
     st.stop()
 
 with st.sidebar:
-    st.markdown(
-        '<div class="brand-wrap">'
-        '<div class="brand-mark">◉</div>'
-        '<div class="brand">GuardianEye</div>'
-        '<div class="brand-sub">Security Operations Platform</div>'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<div class="side-status"><div class="side-label">SESSION</div><strong>Protected workspace</strong><br><span class="small-muted">Encrypted control surface</span></div>', unsafe_allow_html=True)
-    st.markdown('<div class="side-label">WORKSPACE</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="brand">◉ GuardianEye</div>', unsafe_allow_html=True)
+    st.markdown('<div class="brand-sub">Security Operations Platform</div>', unsafe_allow_html=True)
+    st.divider()
+    st.markdown('<div class="small-muted">COMMAND MENU · DIRECT ACCESS</div>', unsafe_allow_html=True)
     if "page" not in st.session_state:
         st.session_state.page = "Overview"
-
-    nav_items = [
-        ("Overview", "مركز المراقبة", "⌂"),
-        ("Systems", "المنظومات", "◈"),
-        ("Add System", "إضافة منظومة", "+"),
-        ("Security", "المراقبة الأمنية", "◉"),
-        ("Incidents", "الحوادث", "!"),
-        ("Analytics", "التحليلات", "▥"),
-        ("Events", "سجل الأحداث", "≡"),
-        ("Agent Setup", "إعداد الحساس", "⌁"),
-    ]
-
-    for page_id, label, icon in nav_items:
-        active = st.session_state.page == page_id
-        button_label = f"{icon}  {label}"
-        if st.button(button_label, key=f"nav_{page_id}", use_container_width=True):
-            go_to(page_id)
-        if active:
-            st.markdown('<div style="height:2px;background:linear-gradient(90deg,transparent,rgba(89,215,255,.7),transparent);margin:-4px 0 8px;border-radius:999px;"></div>', unsafe_allow_html=True)
-
-    st.markdown('<div class="side-label" style="margin-top:1rem;">OPERATOR</div>', unsafe_allow_html=True)
+    for page_name in PAGES:
+        label = ("● " if page_name == st.session_state.page else "") + PAGE_LABELS[page_name]
+        if st.button(label, key=f"side_nav_{page_name}", use_container_width=True):
+            st.session_state.page = page_name
+            st.rerun()
+    st.divider()
     st.markdown(f'<div class="small-muted">Signed in as<br><strong>{safe_text(ADMIN_USER)}</strong></div>', unsafe_allow_html=True)
-    if st.button("تسجيل الخروج", key="logout_btn", use_container_width=True):
+    if st.button("تسجيل الخروج", use_container_width=True):
         logout()
 
 try:
