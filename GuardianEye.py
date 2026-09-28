@@ -607,35 +607,244 @@ def agent_is_online(system):
 
 
 def login():
-    st.markdown('<div class="brand">GUARDIANEYE · SECURITY OPERATIONS</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">مركز مراقبة أمني وتشغيلي للأنظمة المصرح بها</div>', unsafe_allow_html=True)
-    left, right = st.columns([1.05, .95], gap="large")
+    st.markdown(
+        """
+        <style>
+        /* =====================================================
+           GuardianEye v8 — Elite Access Gate
+           ===================================================== */
+        .login-shell{
+            min-height:72vh;
+            display:grid;
+            grid-template-columns:1.08fr .92fr;
+            gap:3.4rem;
+            align-items:stretch;
+            padding:1.5rem 0 2rem;
+            position:relative;
+        }
+        .login-shell::before{
+            content:"";
+            position:absolute;
+            inset:-10% -4% auto -4%;
+            height:460px;
+            background:
+              radial-gradient(circle at 18% 36%, rgba(74,168,255,.12), transparent 28%),
+              radial-gradient(circle at 82% 18%, rgba(56,230,165,.07), transparent 24%);
+            pointer-events:none;
+            z-index:0;
+        }
+        .login-left,.login-right{position:relative;z-index:1;}
+        .brand-lockup{
+            display:flex;
+            align-items:center;
+            gap:.7rem;
+            margin-bottom:2.6rem;
+        }
+        .brand-mark{
+            width:38px;height:38px;border-radius:12px;
+            display:grid;place-items:center;
+            border:1px solid rgba(93,225,255,.28);
+            background:linear-gradient(145deg,#0c1824,#091019);
+            box-shadow:0 0 30px rgba(74,168,255,.08);
+            color:#76dcff;font-size:1rem;font-weight:900;
+        }
+        .brand-name{
+            font-size:1rem;font-weight:900;letter-spacing:.13em;
+            color:#eef4f8;text-transform:uppercase;
+        }
+        .brand-meta{
+            color:#71869d;font-size:.66rem;letter-spacing:.16em;
+            text-transform:uppercase;margin-top:.12rem;
+        }
+        .login-eyebrow{
+            color:#5fa7dc;font-size:.67rem;font-weight:900;
+            letter-spacing:.2em;text-transform:uppercase;
+        }
+        .login-title{
+            margin:.65rem 0 .55rem;
+            font-size:3.25rem;font-weight:900;letter-spacing:-.045em;
+            color:#f6f9fc;line-height:1.03;
+        }
+        .login-copy{
+            max-width:650px;color:#8fa2b5;font-size:.95rem;line-height:1.95;
+        }
+        .login-copy strong{color:#dfe8f0;}
+        .login-rule{
+            width:94px;height:2px;margin:1.45rem 0 1.25rem;
+            background:linear-gradient(90deg,#4aa8ff,rgba(74,168,255,0));
+        }
+        .security-layers{
+            margin-top:2.4rem;
+            border-top:1px solid rgba(148,163,184,.12);
+        }
+        .security-layer{
+            display:grid;grid-template-columns:42px 1fr auto;gap:1rem;align-items:center;
+            padding:1rem 0;border-bottom:1px solid rgba(148,163,184,.1);
+        }
+        .layer-no{font:800 .68rem/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#53789b;}
+        .layer-main{font-weight:800;color:#e8eef4;font-size:.86rem;}
+        .layer-sub{color:#73889d;font-size:.71rem;margin-top:.18rem;}
+        .layer-state{
+            display:inline-flex;align-items:center;gap:.4rem;
+            padding:.28rem .5rem;border-radius:999px;
+            border:1px solid rgba(56,230,165,.14);background:rgba(56,230,165,.035);
+            color:#73dfb5;font-size:.62rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase;
+        }
+        .layer-dot{width:7px;height:7px;border-radius:50%;background:#38e6a5;box-shadow:0 0 11px rgba(56,230,165,.55);}
+        .login-footnote{
+            margin-top:1.7rem;color:#6e8195;font-size:.66rem;letter-spacing:.08em;
+            text-transform:uppercase;
+        }
+
+        .access-panel{
+            align-self:center;
+            position:relative;
+            border:1px solid rgba(148,163,184,.2);
+            background:linear-gradient(160deg,rgba(14,22,31,.97),rgba(8,13,19,.98));
+            border-radius:22px;
+            padding:1.45rem 1.45rem 1.2rem;
+            box-shadow:0 28px 80px rgba(0,0,0,.33),0 0 0 1px rgba(74,168,255,.025) inset;
+            overflow:hidden;
+        }
+        .access-panel::before{
+            content:"";position:absolute;left:0;right:0;top:0;height:2px;
+            background:linear-gradient(90deg,#4aa8ff,rgba(74,168,255,.12),rgba(56,230,165,.45));
+        }
+        .access-topline{
+            display:flex;justify-content:space-between;align-items:center;
+            padding-bottom:1rem;margin-bottom:1rem;
+            border-bottom:1px solid rgba(148,163,184,.11);
+        }
+        .access-kicker{font-size:.63rem;letter-spacing:.18em;text-transform:uppercase;color:#66809b;font-weight:900;}
+        .access-status{display:inline-flex;align-items:center;gap:.4rem;color:#75dfb4;font-size:.62rem;font-weight:800;}
+        .access-status-dot{width:7px;height:7px;border-radius:50%;background:#38e6a5;box-shadow:0 0 12px rgba(56,230,165,.5);}
+        .access-icon{
+            width:44px;height:44px;border-radius:14px;margin-bottom:1rem;
+            display:grid;place-items:center;
+            border:1px solid rgba(74,168,255,.18);
+            background:rgba(74,168,255,.05);color:#68c7ff;font-size:1rem;
+        }
+        .access-title{font-size:1.75rem;font-weight:900;letter-spacing:-.03em;color:#f3f7fa;margin-bottom:.35rem;}
+        .access-copy{color:#7f93a7;font-size:.74rem;line-height:1.75;margin-bottom:1.2rem;}
+        .access-panel [data-testid="stFormSubmitButton"] button,
+        .access-panel .stButton>button{
+            min-height:48px;border-radius:13px;font-weight:850;
+            border:1px solid rgba(74,168,255,.26);
+            background:linear-gradient(180deg,#142334,#101b28);
+            color:#eef7ff;
+            transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease;
+        }
+        .access-panel [data-testid="stFormSubmitButton"] button:hover,
+        .access-panel .stButton>button:hover{
+            transform:translateY(-1px);
+            border-color:rgba(93,225,255,.58);
+            box-shadow:0 14px 28px rgba(74,168,255,.1);
+            background:linear-gradient(180deg,#172b40,#122132);
+        }
+        .access-panel input{
+            border-radius:12px !important;
+            border:1px solid rgba(148,163,184,.14) !important;
+            background:#0a1017 !important;
+            min-height:48px !important;
+        }
+        .access-panel input:focus{
+            border-color:rgba(74,168,255,.55) !important;
+            box-shadow:0 0 0 1px rgba(74,168,255,.17),0 0 24px rgba(74,168,255,.07) !important;
+        }
+        .access-panel [data-testid="stTextInput"] label{font-size:.68rem;font-weight:800;color:#b8c8d7;}
+        .access-panel .stAlert{border-radius:12px;margin-top:.85rem;}
+        .trust-row{
+            display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;
+            margin-top:1rem;
+        }
+        .trust-chip{
+            padding:.55rem .55rem;border:1px solid rgba(148,163,184,.1);
+            background:rgba(255,255,255,.014);border-radius:10px;
+            text-align:center;color:#70869c;font-size:.61rem;letter-spacing:.05em;text-transform:uppercase;
+        }
+        .access-notice{
+            margin-top:.85rem;padding:.7rem .75rem;border-top:1px solid rgba(148,163,184,.1);
+            color:#70859a;font-size:.65rem;line-height:1.7;text-align:center;
+        }
+
+        @media (max-width: 900px){
+            .login-shell{grid-template-columns:1fr;gap:1.6rem;}
+            .login-title{font-size:2.5rem;}
+            .access-panel{max-width:680px;}
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.markdown(
+        '<div class="login-shell">'
+        '<div class="login-left">'
+        '<div class="brand-lockup">'
+        '<div class="brand-mark">◉</div>'
+        '<div><div class="brand-name">GuardianEye</div><div class="brand-meta">Security Operations Platform</div></div>'
+        '</div>'
+        '<div class="login-eyebrow">SECURITY OPERATIONS / CONTROL PLANE</div>'
+        '<div class="login-title">مركز القيادة<br>للمراقبة الأمنية.</div>'
+        '<div class="login-rule"></div>'
+        '<div class="login-copy">'
+        'رؤية مركزية للمنظومات المصرح بمراقبتها، تجمع <strong>الصحة التشغيلية</strong> و<strong>البيانات الأمنية</strong> والحوادث في مساحة واحدة قابلة للمتابعة.'
+        '</div>'
+        '<div class="security-layers">'
+        '<div class="security-layer"><div class="layer-no">01</div><div><div class="layer-main">Operational Visibility</div><div class="layer-sub">صحة الخدمات وزمن الاستجابة وحالة المنظومات.</div></div><div class="layer-state"><span class="layer-dot"></span>READY</div></div>'
+        '<div class="security-layer"><div class="layer-no">02</div><div><div class="layer-main">Security Telemetry</div><div class="layer-sub">أحداث من داخل البيئة المصرح بها عبر الـAgent.</div></div><div class="layer-state"><span class="layer-dot"></span>READY</div></div>'
+        '<div class="security-layer"><div class="layer-no">03</div><div><div class="layer-main">Incident Response</div><div class="layer-sub">أدلة، أحداث مرتبطة، متابعة وتصدير تقارير.</div></div><div class="layer-state"><span class="layer-dot"></span>READY</div></div>'
+        '</div>'
+        '<div class="login-footnote">AUTHORIZED ENVIRONMENT · OPERATOR ACCESS ONLY</div>'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+
+    left, right = st.columns([1.08, .92], gap="large")
+
     with left:
-        st.markdown("### مراقبة من مكان واحد")
-        st.write("راقب صحة الخدمات، استقبال المعلومات من الحساس الموجود داخل المنظومة، اكتشاف السلوك الهجومي، وإدارة الحوادث والتقارير.")
-        st.markdown("""
-        <div class="incident-card">
-          <div class="mini">01</div><strong>صحة المنظومة</strong><br><span class="small-muted">التوفر وزمن الاستجابة</span>
-        </div>
-        <div class="incident-card">
-          <div class="mini">02</div><strong>المراقبة الأمنية</strong><br><span class="small-muted">أحداث من داخل المنظومة وعناوين المصادر</span>
-        </div>
-        <div class="incident-card">
-          <div class="mini">03</div><strong>الحوادث والتقارير</strong><br><span class="small-muted">تنبيه، تفاصيل، أدلة، وتقرير للمختصين</span>
-        </div>
-        """, unsafe_allow_html=True)
+        # Spacer column: visual shell above already occupies this area.
+        st.empty()
+
     with right:
-        st.markdown("### تسجيل الدخول")
-        username = st.text_input("اسم المستخدم", placeholder="أدخل اسم المستخدم", key="login_username")
-        password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
-        if st.button("دخول إلى مركز المراقبة", use_container_width=True):
+        st.markdown('<div class="access-panel">', unsafe_allow_html=True)
+        st.markdown(
+            '<div class="access-topline">'
+            '<span class="access-kicker">Identity Gateway</span>'
+            '<span class="access-status"><span class="access-status-dot"></span>Secure channel</span>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('<div class="access-icon">◈</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-title">تسجيل الدخول</div>', unsafe_allow_html=True)
+        st.markdown('<div class="access-copy">الوصول إلى مركز المراقبة مخصص للمستخدمين المصرح لهم فقط.</div>', unsafe_allow_html=True)
+
+        with st.form("guardianeye_login_form", clear_on_submit=False):
+            username = st.text_input("اسم المستخدم", placeholder="أدخل معرف المشغل", key="login_username")
+            password = st.text_input("كلمة المرور", type="password", placeholder="أدخل كلمة المرور", key="login_password")
+            submitted = st.form_submit_button("فتح مركز القيادة  →", use_container_width=True)
+
+        if submitted:
             if username == ADMIN_USER and password == ADMIN_PASSWORD:
                 st.session_state.logged_in = True
                 st.session_state.pop("login_password", None)
                 st.rerun()
             else:
                 st.error("بيانات الدخول غير صحيحة.")
-        st.caption("Authorized access only.")
+
+        st.markdown(
+            '<div class="trust-row">'
+            '<div class="trust-chip">Identity</div>'
+            '<div class="trust-chip">Encrypted</div>'
+            '<div class="trust-chip">Authorized</div>'
+            '</div>'
+            '<div class="access-notice">لا تشارك بيانات الدخول. سجلات المراقبة والبيانات التشغيلية متاحة داخل مركز القيادة للمستخدم المصرح له فقط.</div>',
+            unsafe_allow_html=True,
+        )
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 
 def logout():
