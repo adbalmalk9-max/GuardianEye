@@ -1,4 +1,4 @@
-import base64
+
 import datetime as dt
 import hashlib
 import html
@@ -95,7 +95,12 @@ body{background:var(--bg);color:var(--text);}
   background:linear-gradient(180deg,#070d14,#060a10);
   border-right:1px solid var(--line);
 }
-[data-testid="stSidebarCollapsedControl"]{display:none!important;}
+[data-testid="stSidebarCollapsedControl"]{
+  display:flex!important;
+  visibility:visible!important;
+  opacity:1!important;
+  z-index:9999!important;
+}
 .stButton>button{
   min-height:40px;
   border-radius:10px;
