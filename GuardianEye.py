@@ -21,7 +21,7 @@ from streamlit_autorefresh import st_autorefresh
 
 
 APP_NAME = "GuardianEye"
-APP_VERSION = "8.1"
+APP_VERSION = "8.3"
 HEALTHY_THRESHOLD_MS = 1500
 AGENT_OFFLINE_SECONDS = 90
 INCIDENT_OPEN_WINDOW_MINUTES = 15
@@ -614,8 +614,8 @@ def login():
            GuardianEye v8.1 — Clean Executive Access Gate
            ===================================================== */
         .login-wrap{
-            min-height:76vh;
-            padding:2rem 0 2.5rem;
+            min-height:auto;
+            padding:0;
             position:relative;
         }
         .login-wrap::before{
@@ -679,7 +679,7 @@ def login():
         .brief-line{height:1px;width:76px;background:rgba(148,163,184,.15);}
 
         .access-panel{
-            margin-top:0;
+            margin-top:.15rem;
             position:relative;
             border:1px solid rgba(148,163,184,.2);
             background:linear-gradient(160deg,rgba(14,22,31,.98),rgba(8,13,19,.99));
@@ -688,6 +688,8 @@ def login():
             box-shadow:0 30px 90px rgba(0,0,0,.38),0 0 0 1px rgba(74,168,255,.028) inset;
             overflow:hidden;
         }
+        .login-hero-col{padding-top:.2rem;}
+
         .access-panel::before{
             content:"";position:absolute;left:0;right:0;top:0;height:2px;
             background:linear-gradient(90deg,#4aa8ff,rgba(74,168,255,.08),rgba(56,230,165,.5));
@@ -758,7 +760,7 @@ def login():
         unsafe_allow_html=True,
     )
 
-    st.markdown('<div class="login-wrap"></div>', unsafe_allow_html=True)
+    # Keep the login gate beside the hero title instead of placing it below a large spacer.
     left, right = st.columns([1.08, .92], gap="large")
 
     with left:
@@ -784,6 +786,7 @@ def login():
         )
 
     with right:
+        st.markdown('<div class="login-hero-col">', unsafe_allow_html=True)
         st.markdown('<div class="access-panel">', unsafe_allow_html=True)
         st.markdown(
             '<div class="access-topline">'
@@ -818,6 +821,7 @@ def login():
             '<div class="access-notice">لا تشارك بيانات الدخول. سجلات المراقبة والبيانات التشغيلية متاحة داخل مركز القيادة للمستخدم المصرح له فقط.</div>',
             unsafe_allow_html=True,
         )
+        st.markdown('</div>', unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
 
